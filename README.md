@@ -1,67 +1,66 @@
 # GURPS Dungeon Creator
 
-Gerador procedural de dungeons para **Foundry VTT v14**, pensado para GURPS (grade hexagonal, 1 hex = 1 jarda).
-Um clique cria a cena pronta: imagem de fundo, paredes, portas, portas secretas, tochas e teleportes.
+A procedural dungeon generator for **Foundry VTT v14**, built with GURPS in mind (hex grid, 1 hex = 1 yard).
+One click creates a ready-to-play scene: background image, walls, doors, secret doors, torches and teleports.
 
-*Procedural dungeon generator for Foundry VTT v14, built with GURPS in mind (hex grid, 1 hex = 1 yard). English below.*
+## Features
 
-## Recursos
+- **Hex or square grids.** Choose **straight walls** (a flat floor plan with the hex grid on top, where each hex belongs to the side its center is on) or walls that follow the grid edges (zigzag).
+- **Rooms and corridors** with corridors 1 to 3 hexes wide, extra paths for alternate routes, and doors that close the whole corridor mouth.
+- **Secret rooms** behind a Foundry **secret door**: players see a plain wall until the GM reveals it.
+- **Teleport rooms** with no access on foot, reached through a pair of teleport circles (Regions with the *Teleport Token* behavior).
+- **Wall torches** (1 to 4 per room depending on its size), or a brazier in the center of the room.
+- **Linked scenes.** Generate up to 9 scenes in a folder (for example 2×2). Corridors leave through the scene edge and lead to the neighboring scene at the same height, with a teleport at each end. This keeps each scene light while the dungeon stays huge.
+- **Seeded.** The same seed always produces the same dungeon.
+- Optional custom textures for floor and rock.
 
-- **Hexágono ou quadrado.** Paredes **retas** (planta com a grade por cima — cada hex pertence ao lado onde está o centro dele) ou seguindo a grade (zigue-zague).
-- **Salas e corredores** com largura de 1 a 3 hexes, caminhos extras e portas que fecham a entrada inteira.
-- **Salas secretas** atrás de uma **porta secreta** do Foundry (os jogadores veem parede até o Mestre revelar).
-- **Salas de teleporte**, sem acesso a pé, com círculos de ida e volta (*Regions* com *Teleport Token*).
-- **Tochas nas paredes** (1 a 4 por sala, conforme o tamanho) ou braseiro no centro.
-- **Cenas ligadas:** gera até 9 cenas numa pasta (ex.: 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura.
-- **Seed:** a mesma seed gera sempre a mesma dungeon.
-- Texturas próprias opcionais para chão e rocha.
+## Installation
 
-## Instalação
-
-No Foundry: *Add-on Modules → Install Module → Manifest URL*:
+In Foundry: *Add-on Modules → Install Module → Manifest URL*:
 
 ```
 https://github.com/Boifuba/gurps-dungeon-creator/releases/latest/download/module.json
 ```
 
-## Uso
+Requires Foundry VTT v14.
 
-Na aba **Cenas**, clique em **Gerar Dungeon** (só o Mestre vê o botão). Ou por macro:
+## Usage
+
+In the **Scenes** sidebar, click **Generate Dungeon** (only the GM sees the button). The dialog groups its settings in four tabs: **Map**, **Rooms**, **Corridors & doors** and **Visual**.
+
+You can also use a macro:
 
 ```js
+// Open the dialog
 game.modules.get("gurps-dungeon-creator").api.open();
 
+// Generate directly
 game.modules.get("gurps-dungeon-creator").api.generate({
-  name: "Cripta Esquecida",
-  scenes: 4,            // cenas ligadas (1 = cena avulsa)
-  gridType: 4,          // 4 = hex topo plano, 2 = hex topo pontudo, 1 = quadrado
-  wallStyle: "straight",// "straight" = paredes retas | "grid" = zigue-zague
+  name: "Forgotten Crypt",
+  scenes: 4,             // linked scenes (1 = a single scene)
+  gridType: 4,           // 4 = hex flat-top, 2 = hex pointy-top, 1 = square
+  wallStyle: "straight", // "straight" = flat walls | "grid" = follow the hex edges
   rooms: 10,
-  corridorWidth: 2,
-  secretRooms: 1,
-  teleportRooms: 1,
-  lightPlacement: "wall"
+  corridorWidth: 2,      // 1 to 3 hexes
+  secretRooms: 1,        // rooms behind a secret door
+  teleportRooms: 1,      // rooms reachable only by teleport
+  lightPlacement: "wall" // "wall" = torches | "center" = brazier
 });
 ```
 
-## Desenvolvimento
+Any option you leave out uses its default.
 
-Testes sem o Foundry (usam as classes de grade do Foundry instalado):
+## Development
+
+Tests run without Foundry, using the grid classes from your installed copy of Foundry:
 
 ```
-node tools/preview.mjs [seed] [gridType] [largura] [straight|grid]
+node tools/preview.mjs [seed] [gridType] [corridorWidth] [straight|grid]
 node tools/set-test.mjs
 ```
 
-`tools/render-test.html` desenha a imagem no navegador (servir a pasta do módulo e o `resources/app/common` do Foundry em `/foundry/`).
+`tools/render-test.html` draws the generated image in a browser. Serve the module folder, plus Foundry's `resources/app/common` folder under `/foundry/`.
 
----
+## Releasing
 
-## English
-
-- Hex or square grids, with **straight walls** (floor plan with the grid on top) or grid-following walls.
-- Rooms and corridors (1–3 hexes wide), doors, **Foundry secret doors**, **teleport-only rooms**, **wall torches**.
-- **Linked scenes:** up to 9 scenes in a folder, connected by edge corridors with cross-scene teleports.
-- Seeded and reproducible. Requires Foundry VTT v14.
-
-Install with the manifest URL above, then click **Generate Dungeon** in the Scenes sidebar.
+Publishing a GitHub Release with a tag like `v0.2.1` runs the workflow in `.github/workflows/release.yml`. It builds `module.zip` and a `module.json` with the right version and download link, and attaches both to the release.
