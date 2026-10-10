@@ -1,0 +1,14 @@
+<div class="gdc-header">
+  <div class="form-group">
+    <label>{{localize "GDC.Field.Name"}}</label>
+    <input type="text" name="name" value="{{values.name}}" placeholder="{{localize "GDC.Field.NameHint"}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize "GDC.Field.Seed"}}</label>
+    <div class="form-fields">
+      <input type="text" name="seed" value="{{values.seed}}" placeholder="{{localize "GDC.Field.SeedHint"}}">
+      <button type="button" class="icon fa-solid fa-dice" data-action="randomSeed"
+              data-tooltip="GDC.Field.RandomSeed" aria-label="{{localize "GDC.Field.RandomSeed"}}"></button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>GDC – teste de renderização</title>
+<style>
+  body { margin: 0; background: #111; color: #ddd; font: 14px sans-serif; }
+  img { display: block; max-width: 100%; }
+  p { padding: 8px 12px; margin: 0; }
+</style>
+</head>
+<body>
+<p id="info">Gerando...</p>
+<img id="out" alt="dungeon">
+<script type="module">
+  // Uso: render-test.html?seed=abc&grid=4   (precisa do servidor que expõe /foundry/ = resources/app/common)
+  Math.SQRT3 = 1.7320508075688772;
+  Math.SQRT1_3 = 0.5773502691896257;
+  const { default: SquareGrid } = await import("/foundry/grid/square.mjs");
+  const { default: HexagonalGrid } = await import("/foundry/grid/hexagonal.mjs");
+  const { generateDungeon } = await import("../scripts/generator.js");
+  const { buildWallSegments } = await import("../scripts/walls.js");
+  const { renderDungeon } = await import("../scripts/renderer.js");
+  const { createTopology, createGrid } = await import("../scripts/topology.js");
+
+  const params = new URLSearchParams(location.search);
+  const seed = params.get("seed") || "teste";
+  const gridType = Number(params.get("grid") || 4);
+  const wallStyle = params.get("style") || "straight";
+  const topo = createTopology(createGrid(gridType, 100, { SquareGrid, HexagonalGrid }), 50, 36, wallStyle);
+  const corridorWidth = Number(params.get("width") || 1);
+  const exits = (params.get('exits') || '').split(',').filter(Boolean).map((e, k) => {
+    const [side, pos] = e.split(':');
+    return { id: 'x' + k, side, pos: Number(pos) };
+  });
+  const d = generateDungeon(topo, { seed, corridorWidth, exits });
+  const segs = buildWallSegments(d, { openExits: d.exits.map(ex => ex.cell) });
+  const { placeLights } = await import("../scripts/lights.js");
+  const lights = placeLights(d, { lightChance: 0.8, placement: params.get("lights") || "wall" });
+  const blob = await renderDungeon(d, segs, { lights, exits: d.exits });
+  document.getElementById("out").src = URL.createObjectURL(blob);
+  document.getElementById("info").textContent =
+    `grid=${gridType} seed=${seed} · ${d.rooms.length} salas · ${segs.doors.length} portas · ${segs.walls.length} paredes · ${(blob.size / 1024).toFixed(0)} KB`;
+</script>
+</body>
+</html>

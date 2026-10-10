@@ -1,0 +1,134 @@
+<div class="gdc-body">
+
+  {{!-- Mapa: grade, estilo e tamanho --}}
+  <section class="tab {{tabs.map.cssClass}}" data-tab="map" data-group="primary">
+    <div class="form-group">
+      <label>{{localize "GDC.Field.GridType"}}</label>
+      <select name="gridType">
+        {{selectOptions gridTypes selected=values.gridType localize=true}}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.WallStyle"}}</label>
+      <select name="wallStyle">
+        {{selectOptions wallStyles selected=values.wallStyle localize=true}}
+      </select>
+      <p class="hint">{{localize "GDC.Field.WallStyleHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Preset"}}</label>
+      <div class="form-fields gdc-presets">
+        <button type="button" data-action="preset" data-preset="small">{{localize "GDC.Preset.Small"}}</button>
+        <button type="button" data-action="preset" data-preset="medium">{{localize "GDC.Preset.Medium"}}</button>
+        <button type="button" data-action="preset" data-preset="large">{{localize "GDC.Preset.Large"}}</button>
+      </div>
+      <p class="hint">{{localize "GDC.Field.PresetHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.MapSize"}}</label>
+      <div class="form-fields">
+        <input type="number" name="width" value="{{values.width}}" min="10" max="200" step="1">
+        <span>×</span>
+        <input type="number" name="height" value="{{values.height}}" min="10" max="200" step="1">
+      </div>
+      <p class="hint">{{localize "GDC.Field.MapSizeHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Scenes"}}</label>
+      <input type="number" name="scenes" value="{{values.scenes}}" min="1" max="9" step="1">
+      <p class="hint">{{localize "GDC.Field.ScenesHint"}}</p>
+    </div>
+  </section>
+
+  {{!-- Salas: quantidade, tamanho e salas secretas --}}
+  <section class="tab {{tabs.rooms.cssClass}}" data-tab="rooms" data-group="primary">
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Rooms"}}</label>
+      <input type="number" name="rooms" value="{{values.rooms}}" min="2" max="80" step="1">
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.RoomSize"}}</label>
+      <div class="form-fields">
+        <input type="number" name="roomMin" value="{{values.roomMin}}" min="2" max="30" step="1">
+        <span>–</span>
+        <input type="number" name="roomMax" value="{{values.roomMax}}" min="2" max="30" step="1">
+      </div>
+      <p class="hint">{{localize "GDC.Field.RoomSizeHint"}}</p>
+    </div>
+    <fieldset>
+      <legend>{{localize "GDC.Section.Secret"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.SecretRooms"}}</label>
+        <input type="number" name="secretRooms" value="{{values.secretRooms}}" min="0" max="20" step="1">
+        <p class="hint">{{localize "GDC.Field.SecretRoomsHint"}}</p>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>{{localize "GDC.Section.Teleports"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.TeleportRooms"}}</label>
+        <input type="number" name="teleportRooms" value="{{values.teleportRooms}}" min="0" max="20" step="1">
+        <p class="hint">{{localize "GDC.Field.TeleportRoomsHint"}}</p>
+      </div>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.TeleportConfirm"}}</label>
+        <input type="checkbox" name="teleportConfirm" {{checked values.teleportConfirm}}>
+        <p class="hint">{{localize "GDC.Field.TeleportConfirmHint"}}</p>
+      </div>
+    </fieldset>
+  </section>
+
+  {{!-- Corredores e portas --}}
+  <section class="tab {{tabs.corridors.cssClass}}" data-tab="corridors" data-group="primary">
+    <div class="form-group">
+      <label>{{localize "GDC.Field.CorridorWidth"}}</label>
+      <select name="corridorWidth">
+        {{selectOptions corridorWidths selected=values.corridorWidth}}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.ExtraLoops"}}</label>
+      <range-picker name="extraLoops" value="{{percent.extraLoops}}" min="0" max="60" step="5"></range-picker>
+      <p class="hint">{{localize "GDC.Field.ExtraLoopsHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.DoorChance"}}</label>
+      <range-picker name="doorChance" value="{{percent.doorChance}}" min="0" max="100" step="5"></range-picker>
+    </div>
+  </section>
+
+  {{!-- Visual: luz, escuridão, texturas e resolução --}}
+  <section class="tab {{tabs.visual.cssClass}}" data-tab="visual" data-group="primary">
+    <div class="form-group">
+      <label>{{localize "GDC.Field.LightChance"}}</label>
+      <range-picker name="lightChance" value="{{percent.lightChance}}" min="0" max="100" step="5"></range-picker>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.LightPlacement"}}</label>
+      <select name="lightPlacement">
+        {{selectOptions lightPlacements selected=values.lightPlacement localize=true}}
+      </select>
+      <p class="hint">{{localize "GDC.Field.LightPlacementHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Darkness"}}</label>
+      <range-picker name="darkness" value="{{percent.darkness}}" min="0" max="100" step="5"></range-picker>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Setting.FloorTexture"}}</label>
+      <file-picker name="floorTexture" type="image" value="{{values.floorTexture}}"></file-picker>
+      <p class="hint">{{localize "GDC.Setting.FloorTextureHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Setting.RockTexture"}}</label>
+      <file-picker name="rockTexture" type="image" value="{{values.rockTexture}}"></file-picker>
+      <p class="hint">{{localize "GDC.Setting.RockTextureHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.CellSize"}}</label>
+      <input type="number" name="cellSize" value="{{values.cellSize}}" min="50" max="300" step="10">
+      <p class="hint">{{localize "GDC.Field.CellSizeHint"}}</p>
+    </div>
+  </section>
+
+</div>

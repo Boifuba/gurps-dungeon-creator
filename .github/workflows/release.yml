@@ -1,0 +1,38 @@
+# Ao publicar uma Release no GitHub (tag vX.Y.Z), gera module.zip e um module.json
+# com a versão e o link de download corretos, e anexa os dois à Release.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versão a partir da tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Atualizar module.json
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DOWNLOAD: https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.zip
+        run: |
+          jq --arg v "$VERSION" --arg d "$DOWNLOAD" '.version = $v | .download = $d' module.json > module.tmp.json
+          mv module.tmp.json module.json
+
+      - name: Empacotar
+        run: zip -r module.zip module.json scripts templates styles lang README.md
+
+      - name: Anexar à Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            module.json
+            module.zip

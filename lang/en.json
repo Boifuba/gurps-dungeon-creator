@@ -1,0 +1,94 @@
+{
+  "GDC": {
+    "Title": "GURPS Dungeon Creator",
+    "Button": "Generate Dungeon",
+    "Generate": "Generate Dungeon",
+    "LevelName": "Dungeon",
+    "Grid": {
+      "HexColumns": "Hex – flat top (columns)",
+      "HexRows": "Hex – pointy top (rows)",
+      "Square": "Square"
+    },
+    "WallStyle": {
+      "Straight": "Straight (floor plan with hexes on top)",
+      "Grid": "Follow the grid (zigzag)"
+    },
+    "Section": {
+      "Size": "Size",
+      "Details": "Details",
+      "Teleports": "Teleports",
+      "Secret": "Secret rooms"
+    },
+    "Preset": {
+      "Small": "Small",
+      "Medium": "Medium",
+      "Large": "Large",
+      "Applied": "Size applied to map and rooms."
+    },
+    "Field": {
+      "Name": "Scene name",
+      "NameHint": "Empty = \"Dungeon <seed>\"",
+      "Seed": "Seed",
+      "SeedHint": "Empty = random",
+      "RandomSeed": "Random seed",
+      "GridType": "Grid",
+      "WallStyle": "Wall style",
+      "WallStyleHint": "Straight: rooms and corridors with flat walls; each hex belongs to the side its center is on. Only matters on hex grids.",
+      "MapSize": "Map (columns × rows)",
+      "MapSizeHint": "In grid hexes/squares (in GURPS, 1 hex = 1 yard).",
+      "Rooms": "Number of rooms",
+      "RoomSize": "Room size",
+      "CorridorWidth": "Corridor width",
+      "CorridorWidthOne": "{n} hex (narrow)",
+      "CorridorWidthMany": "{n} hexes",
+      "ExtraLoops": "Extra paths (%)",
+      "DoorChance": "Door chance (%)",
+      "LightChance": "Lit rooms (%)",
+      "Darkness": "Darkness (%)",
+      "CellSize": "Pixels per hex/square",
+      "TeleportRooms": "Teleport rooms",
+      "TeleportRoomsHint": "Rooms with no access on foot. Only reachable through a teleport circle (both ways).",
+      "TeleportConfirm": "Ask first",
+      "TeleportConfirmHint": "Shows a confirmation when stepping on the circle instead of teleporting right away.",
+      "Preset": "Quick size",
+      "PresetHint": "Fills in map and room sizes at once.",
+      "RoomSizeHint": "Smallest and largest side of a room, in hexes.",
+      "ExtraLoopsHint": "Extra links between rooms, for alternate paths.",
+      "CellSizeHint": "Image resolution. 100 works for almost everything; raise it only for heavy zoom.",
+      "LightPlacement": "Light placement",
+      "LightPlacementHint": "On the walls: 1 to 4 torches per room depending on size, away from doors.",
+      "SecretRooms": "Amount",
+      "SecretRoomsHint": "Linked by a narrow passage ending in a Foundry secret door. Players see a wall until the GM reveals the door.",
+      "Scenes": "Linked scenes",
+      "ScenesHint": "More than 1: creates several scenes in a folder, side by side (4 = 2×2). Corridors leave through the edge into the neighbor scene, at the same height."
+    },
+    "Teleport": {
+      "Name": "Teleport: room {from} → room {to}"
+    },
+    "Setting": {
+      "FloorTexture": "Floor texture",
+      "FloorTextureHint": "Seamless tiling image for floors. Empty = drawn by the module.",
+      "RockTexture": "Rock texture",
+      "RockTextureHint": "Seamless tiling image for rock/walls. Empty = drawn by the module."
+    },
+    "Tab": {
+      "map": "Map",
+      "rooms": "Rooms",
+      "corridors": "Corridors & doors",
+      "visual": "Visual"
+    },
+    "LightPlacement": {
+      "Wall": "Torches on the walls",
+      "Center": "Brazier in the center"
+    },
+    "Set": {
+      "Planning": "Planning {count} linked scenes...",
+      "Building": "Building scene {n} of {count}...",
+      "PartName": "{name} — Part {n}",
+      "Done": "\"{name}\": {count} scenes created in the folder, {links} of {total} links (seed {seed})."
+    },
+    "Exit": {
+      "Name": "Exit → Part {part}"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+/* Topo fixo (nome/seed) + abas + corpo rolável + rodapé fixo */
+.gurps-dungeon-creator .window-content {
+  overflow: hidden;
+  max-height: calc(100vh - 120px);
+}
+
+.gurps-dungeon-creator .gdc-header {
+  flex: none;
+}
+
+.gurps-dungeon-creator nav.tabs {
+  flex: none;
+}
+
+.gurps-dungeon-creator .gdc-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.gurps-dungeon-creator .gdc-presets button {
+  flex: 1;
+}
+
+.gurps-dungeon-creator .form-fields > span {
+  flex: 0 0 auto;
+  padding: 0 0.25rem;
+}

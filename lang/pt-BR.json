@@ -1,0 +1,94 @@
+{
+  "GDC": {
+    "Title": "GURPS Dungeon Creator",
+    "Button": "Gerar Dungeon",
+    "Generate": "Gerar Dungeon",
+    "LevelName": "Dungeon",
+    "Grid": {
+      "HexColumns": "Hexágono – topo plano (colunas)",
+      "HexRows": "Hexágono – topo pontudo (linhas)",
+      "Square": "Quadrado"
+    },
+    "WallStyle": {
+      "Straight": "Retas (planta com hexes por cima)",
+      "Grid": "Seguir a grade (zigue-zague)"
+    },
+    "Section": {
+      "Size": "Tamanho",
+      "Details": "Detalhes",
+      "Teleports": "Teleportes",
+      "Secret": "Salas secretas"
+    },
+    "Preset": {
+      "Small": "Pequena",
+      "Medium": "Média",
+      "Large": "Grande",
+      "Applied": "Tamanho aplicado ao mapa e às salas."
+    },
+    "Field": {
+      "Name": "Nome da cena",
+      "NameHint": "Vazio = \"Dungeon <seed>\"",
+      "Seed": "Seed",
+      "SeedHint": "Vazio = aleatória",
+      "RandomSeed": "Sortear seed",
+      "GridType": "Grade",
+      "WallStyle": "Estilo das paredes",
+      "WallStyleHint": "Retas: salas e corredores com paredes lisas; cada hex pertence ao lado onde está o centro dele. Só muda algo em grade hexagonal.",
+      "MapSize": "Mapa (colunas × linhas)",
+      "MapSizeHint": "Em hexes/quadrados da grade (no GURPS, 1 hex = 1 jarda).",
+      "Rooms": "Número de salas",
+      "RoomSize": "Tamanho das salas",
+      "CorridorWidth": "Largura dos corredores",
+      "CorridorWidthOne": "{n} hex (estreito)",
+      "CorridorWidthMany": "{n} hexes",
+      "ExtraLoops": "Caminhos extras (%)",
+      "DoorChance": "Chance de porta (%)",
+      "LightChance": "Salas iluminadas (%)",
+      "Darkness": "Escuridão (%)",
+      "CellSize": "Pixels por hex/quadrado",
+      "TeleportRooms": "Salas de teleporte",
+      "TeleportRoomsHint": "Salas sem nenhum acesso a pé. Só se chega por um círculo de teleporte (ida e volta).",
+      "TeleportConfirm": "Perguntar antes",
+      "TeleportConfirmHint": "Mostra uma confirmação ao pisar no círculo, em vez de teleportar direto.",
+      "Preset": "Tamanho rápido",
+      "PresetHint": "Preenche o tamanho do mapa e das salas de uma vez.",
+      "RoomSizeHint": "Menor e maior lado de uma sala, em hexes.",
+      "ExtraLoopsHint": "Ligações a mais entre salas, para criar caminhos alternativos.",
+      "CellSizeHint": "Resolução da imagem. 100 serve para quase tudo; aumente só se for dar muito zoom.",
+      "LightPlacement": "Posição da luz",
+      "LightPlacementHint": "Nas paredes: 1 a 4 tochas por sala, conforme o tamanho, longe das portas.",
+      "SecretRooms": "Quantidade",
+      "SecretRoomsHint": "Ligadas por uma passagem estreita que termina numa porta secreta do Foundry. Os jogadores veem parede até o Mestre revelar a porta.",
+      "Scenes": "Cenas ligadas",
+      "ScenesHint": "Mais de 1: cria várias cenas numa pasta, lado a lado (4 = 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura."
+    },
+    "Teleport": {
+      "Name": "Teleporte: sala {from} → sala {to}"
+    },
+    "Setting": {
+      "FloorTexture": "Textura do chão",
+      "FloorTextureHint": "Imagem que se repete (seamless) para o chão. Vazio = chão desenhado pelo módulo.",
+      "RockTexture": "Textura da rocha",
+      "RockTextureHint": "Imagem que se repete (seamless) para a rocha/paredes. Vazio = rocha desenhada pelo módulo."
+    },
+    "Tab": {
+      "map": "Mapa",
+      "rooms": "Salas",
+      "corridors": "Corredores e portas",
+      "visual": "Visual"
+    },
+    "LightPlacement": {
+      "Wall": "Tochas nas paredes",
+      "Center": "Braseiro no centro"
+    },
+    "Set": {
+      "Planning": "Planejando {count} cenas ligadas...",
+      "Building": "Criando cena {n} de {count}...",
+      "PartName": "{name} — Parte {n}",
+      "Done": "\"{name}\": {count} cenas criadas na pasta, {links} de {total} ligações (seed {seed})."
+    },
+    "Exit": {
+      "Name": "Saída → Parte {part}"
+    }
+  }
+}
