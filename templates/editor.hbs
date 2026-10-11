@@ -1,0 +1,32 @@
+<div class="gdc-editor-body">
+  <div class="gdc-toolbar">
+    <button type="button" data-action="tool" data-tool="room" class="{{#if (eq tool "room")}}active{{/if}}">
+      <i class="fa-solid fa-square" inert></i> {{localize "GDC.Editor.Room"}}
+    </button>
+    <button type="button" data-action="tool" data-tool="corridor" class="{{#if (eq tool "corridor")}}active{{/if}}">
+      <i class="fa-solid fa-grip-lines" inert></i> {{localize "GDC.Editor.Corridor"}}
+    </button>
+    <label class="gdc-inline">
+      <input type="checkbox" name="autoDoors" {{checked autoDoors}}>
+      {{localize "GDC.Editor.AutoDoors"}}
+    </label>
+    <span class="gdc-hint">{{localize "GDC.Editor.Hint"}}</span>
+    <span class="gdc-spacer"></span>
+    <button type="button" data-action="undo"><i class="fa-solid fa-rotate-left" inert></i> {{localize "GDC.Editor.Undo"}}</button>
+    <button type="button" data-action="save" class="gdc-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "GDC.Editor.Save"}}</button>
+  </div>
+
+  <div class="gdc-canvas-wrap">
+    <canvas tabindex="0"></canvas>
+  </div>
+
+  <div class="gdc-legend">
+    <span><i class="gdc-swatch" style="background:#111"></i>{{localize "GDC.Editor.Room"}}</span>
+    <span><i class="gdc-swatch" style="background:#4a4a4a"></i>{{localize "GDC.Editor.Corridor"}}</span>
+    <span><i class="gdc-swatch" style="background:#e07b20"></i>{{localize "GDC.Editor.Door"}}</span>
+    <span><i class="gdc-swatch" style="background:#a050e0"></i>{{localize "GDC.Editor.SecretDoor"}}</span>
+    <span><i class="gdc-swatch round" style="background:#3d9be9"></i>{{localize "GDC.Editor.Pad"}}</span>
+    <span><i class="gdc-swatch round" style="background:#d8a920"></i>{{localize "GDC.Editor.Exit"}}</span>
+  </div>
+
+</div>

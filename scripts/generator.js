@@ -378,7 +378,7 @@ function hexPath(topo, from, to, rng) {
  * Com as arestas da porta fechadas, ainda dá para chegar ao outro lado andando por perto?
  * Se não dá, a porta realmente bloqueia a passagem.
  */
-function blocksLocally(topo, isFloor, start, closed, edgeKey, reaches, maxDepth) {
+export function blocksLocally(topo, isFloor, start, closed, edgeKey, reaches, maxDepth) {
   const seen = new Set([start]);
   let frontier = [start];
   for (let depth = 0; depth < maxDepth && frontier.length; depth++) {

@@ -1,5 +1,6 @@
 import { MODULE_ID, createDungeonSet } from "./scene-builder.js";
 import { DungeonCreatorApp } from "./app.js";
+import { PlanEditor } from "./editor.js";
 
 Hooks.once("init", () => {
   const { FilePathField, ObjectField } = foundry.data.fields;
@@ -32,7 +33,8 @@ Hooks.once("ready", () => {
   // API para macros:  game.modules.get("gurps-dungeon-creator").api.generate({rooms: 12})
   game.modules.get(MODULE_ID).api = {
     open: () => new DungeonCreatorApp().render({ force: true }),
-    generate: options => createDungeonSet(options)
+    generate: options => createDungeonSet(options),
+    edit: (scene = canvas.scene) => openEditor(scene)
   };
 });
 
@@ -47,4 +49,23 @@ Hooks.on("renderSceneDirectory", (app, html) => {
   button.innerHTML = `<i class="fa-solid fa-dungeon" inert></i><span>${game.i18n.localize("GDC.Button")}</span>`;
   button.addEventListener("click", () => new DungeonCreatorApp().render({ force: true }));
   actions.append(button);
+});
+
+/** Abre o editor da planta, avisando se a cena não puder ser editada. */
+function openEditor(scene) {
+  try {
+    new PlanEditor(scene).render({ force: true });
+  } catch (err) {
+    ui.notifications.error(err.message);
+  }
+}
+
+// Botão direito numa cena gerada pelo módulo → "Editar planta"
+Hooks.on("getSceneContextOptions", (app, menuItems) => {
+  menuItems.push({
+    label: "GDC.Editor.Menu",
+    icon: "fa-solid fa-pen-ruler",
+    visible: li => game.user.isGM && !!game.scenes.get(li.dataset.entryId)?.getFlag(MODULE_ID, "seed"),
+    onClick: (event, li) => openEditor(game.scenes.get(li.dataset.entryId))
+  });
 });

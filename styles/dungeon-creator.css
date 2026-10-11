@@ -27,3 +27,82 @@
   flex: 0 0 auto;
   padding: 0 0.25rem;
 }
+
+/* Editor da planta: barra de ferramentas (com Salvar) sempre visível; o mapa rola se não couber */
+.gdc-editor .window-content {
+  overflow: auto;
+}
+
+.gdc-editor .gdc-spacer {
+  flex: 1;
+}
+
+.gdc-editor .gdc-toolbar button.gdc-save {
+  font-weight: bold;
+}
+
+.gdc-editor .gdc-editor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gdc-editor .gdc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gdc-editor .gdc-toolbar button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.gdc-editor .gdc-toolbar button.active {
+  outline: 2px solid var(--color-warm-2, #ff6400);
+}
+
+.gdc-editor .gdc-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.gdc-editor .gdc-hint {
+  opacity: 0.75;
+  font-size: var(--font-size-12, 12px);
+}
+
+.gdc-editor .gdc-canvas-wrap {
+  overflow: auto;
+  max-height: calc(100vh - 220px);
+}
+
+.gdc-editor .gdc-canvas-wrap canvas {
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  border: 1px solid var(--color-border, #777);
+}
+
+.gdc-editor .gdc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: var(--font-size-12, 12px);
+}
+
+.gdc-editor .gdc-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  vertical-align: middle;
+  border: 1px solid #888;
+}
+
+.gdc-editor .gdc-swatch.round {
+  border-radius: 50%;
+}

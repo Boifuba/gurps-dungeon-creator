@@ -13,6 +13,7 @@ import { renderDungeon } from "./renderer.js";
 import { placeLights } from "./lights.js";
 import { randomSeed } from "./rng.js";
 import { planLinkedSet } from "./set-planner.js";
+import { encodeCells, decodeCells } from "./plan-edit.js";
 
 export const MODULE_ID = "gurps-dungeon-creator";
 
@@ -128,43 +129,11 @@ export async function buildScene(plan, options = {}) {
   const scene = await Scene.create(sceneData, { keepId: !!options.sceneId });
 
   // 3. Paredes e portas -----------------------------------------------------
-  const toPx = c => c.map(v => Math.round(v));
-  const wallData = [
-    ...segs.walls.map(c => ({ c: toPx(c), levels: [levelId] })),
-    ...segs.doors.map(c => ({
-      c: toPx(c),
-      levels: [levelId],
-      door: CONST.WALL_DOOR_TYPES.DOOR,
-      ds: CONST.WALL_DOOR_STATES.CLOSED
-    })),
-    // Porta secreta do Foundry: jogadores veem parede até o Mestre revelar
-    ...segs.secretDoors.map(c => ({
-      c: toPx(c),
-      levels: [levelId],
-      door: CONST.WALL_DOOR_TYPES.SECRET,
-      ds: CONST.WALL_DOOR_STATES.CLOSED
-    }))
-  ];
-  await scene.createEmbeddedDocuments("Wall", wallData);
+  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId));
 
   // 4. Luzes: tochas nas paredes ou braseiro no centro -----------------------
   const distance = scene.grid.distance;
-  const lights = roomLights.map(l => {
-    const dim = l.radius * distance;
-    return {
-      x: Math.round(l.x),
-      y: Math.round(l.y),
-      levels: [levelId],
-      flags: { [MODULE_ID]: { kind: l.kind, room: l.room } },
-      config: {
-        dim,
-        bright: dim * (l.kind === "torch" ? 0.4 : 0.5),
-        color: "#ff9b42",
-        alpha: 0.35,
-        animation: { type: "torch", speed: 3, intensity: 3 }
-      }
-    };
-  });
+  const lights = lightDocuments(roomLights, levelId, distance);
   if (lights.length) await scene.createEmbeddedDocuments("AmbientLight", lights);
 
   // 5. Regiões de teleporte: círculos (dentro da cena) e saídas (para outras cenas)
@@ -199,6 +168,7 @@ export async function buildScene(plan, options = {}) {
       const c = topo.hexCenter(cell);
       padLights.push({
         x: Math.round(c.x), y: Math.round(c.y), levels: [levelId],
+        flags: { [MODULE_ID]: { kind: "pad" } },
         config: { dim: distance * 1.5, bright: distance * 0.5, color: "#5fb4ff", alpha: 0.5,
           animation: { type: "pulse", speed: 2, intensity: 3 } }
       });
@@ -227,6 +197,128 @@ export async function buildScene(plan, options = {}) {
     ui.notifications.info(`"${name}" criada: ${dungeon.rooms.length} salas, ${segs.doors.length} portas, ${segs.secretDoors.length} secretas, ${lights.length} luzes, ${dungeon.teleports.length} teleportes (seed ${dungeon.seed}).`);
   }
   return scene;
+}
+
+/** Paredes, portas e portas secretas no formato do Foundry (marcadas como geradas pelo módulo). */
+function wallDocuments(segs, levelId) {
+  const toPx = c => c.map(v => Math.round(v));
+  const flags = { [MODULE_ID]: { generated: true } };
+  return [
+    ...segs.walls.map(c => ({ c: toPx(c), levels: [levelId], flags })),
+    ...segs.doors.map(c => ({
+      c: toPx(c), levels: [levelId], flags,
+      door: CONST.WALL_DOOR_TYPES.DOOR,
+      ds: CONST.WALL_DOOR_STATES.CLOSED
+    })),
+    // Porta secreta do Foundry: jogadores veem parede até o Mestre revelar
+    ...segs.secretDoors.map(c => ({
+      c: toPx(c), levels: [levelId], flags,
+      door: CONST.WALL_DOOR_TYPES.SECRET,
+      ds: CONST.WALL_DOOR_STATES.CLOSED
+    }))
+  ];
+}
+
+/** Tochas e braseiros no formato do Foundry. */
+function lightDocuments(roomLights, levelId, distance) {
+  return roomLights.map(l => {
+    const dim = l.radius * distance;
+    return {
+      x: Math.round(l.x),
+      y: Math.round(l.y),
+      levels: [levelId],
+      flags: { [MODULE_ID]: { kind: l.kind, room: l.room } },
+      config: {
+        dim,
+        bright: dim * (l.kind === "torch" ? 0.4 : 0.5),
+        color: "#ff9b42",
+        alpha: 0.35,
+        animation: { type: "torch", speed: 3, intensity: 3 }
+      }
+    };
+  });
+}
+
+/**
+ * Reconstrói a planta de uma cena gerada pelo módulo.
+ * Se a cena já foi editada, usa as células guardadas; senão, gera de novo pela seed
+ * e confere se bate com o que foi salvo na criação.
+ * @returns {{topo, dungeon, cellSize, gridType, wallStyle}}
+ */
+export function loadScenePlan(scene) {
+  const f = scene.flags?.[MODULE_ID];
+  if (!f?.seed || !f.options) throw new Error(game.i18n.localize("GDC.Editor.NotGenerated"));
+  const plan = planDungeon({
+    ...f.options, seed: f.seed, gridType: f.gridType, wallStyle: f.wallStyle ?? "grid", cellSize: f.cellSize
+  });
+  const d = plan.dungeon;
+
+  if (f.cells) {
+    d.cells = decodeCells(f.cells);
+    d.rooms = f.rooms.map(({ center, ...r }) => r);
+    d.doors = f.doors.map(o => ({ edges: o.cells, room: o.room, secret: o.secret, secretRoom: o.secretRoom }));
+  } else {
+    const same = d.rooms.length === f.rooms.length
+      && d.rooms.every((r, k) => r.x === f.rooms[k].x && r.y === f.rooms[k].y && r.w === f.rooms[k].w && r.h === f.rooms[k].h);
+    if (!same) throw new Error(game.i18n.localize("GDC.Editor.OldVersion"));
+  }
+  d.teleports = f.teleports ?? d.teleports;
+  d.exits = (f.exits ?? []).map(({ id, side, cell }) => ({ id, side, cell }));
+  return plan;
+}
+
+/**
+ * Aplica uma planta editada à cena: nova imagem de fundo, paredes e tochas refeitas.
+ * Tokens, notas, regiões (teleportes/saídas) e paredes feitas à mão ficam como estão.
+ */
+export async function applyEditedPlan(scene, plan, dungeon, options = {}) {
+  const f = scene.flags[MODULE_ID];
+  const { topo } = plan;
+  const levelId = f.levelId;
+  const segs = buildWallSegments(dungeon, { openExits: dungeon.exits.map(ex => ex.cell) });
+
+  // Mantém acesas as salas que já tinham luz; salas novas seguem a chance configurada
+  const kindOf = l => l.getFlag(MODULE_ID, "kind");
+  const oldLights = scene.lights.filter(l => ["torch", "brazier"].includes(kindOf(l)));
+  const litRooms = new Set(oldLights.map(l => l.getFlag(MODULE_ID, "room")));
+  const onlyBraziers = oldLights.length && oldLights.every(l => kindOf(l) === "brazier");
+  const roomLights = placeLights(dungeon, {
+    lightChance: Number(options.lightChance ?? 0.6),
+    placement: onlyBraziers ? "center" : (options.lightPlacement ?? "wall"),
+    isLit: room => (room.isNew ? undefined : litRooms.has(room.id))
+  });
+
+  // 1. Imagem nova (nome novo, para o navegador não usar a antiga em cache)
+  const blob = await renderDungeon(dungeon, segs, {
+    floorTexture: options.floorTexture,
+    rockTexture: options.rockTexture,
+    lights: roomLights,
+    exits: dungeon.exits
+  });
+  const safeName = scene.name.slugify({ strict: true }) || "dungeon";
+  const src = await uploadImage(blob, `${safeName}-${dungeon.seed}-${Date.now().toString(36)}.webp`);
+  await scene.updateEmbeddedDocuments("Level", [{ _id: levelId, "background.src": src }]);
+
+  // 2. Paredes: troca só as geradas pelo módulo. Cenas antigas não tinham essa marca,
+  //    então nelas troca todas as paredes do nível da dungeon.
+  const generated = scene.walls.filter(w => w.getFlag(MODULE_ID, "generated"));
+  const oldWalls = generated.length ? generated
+    : scene.walls.filter(w => !w.levels.size || w.levels.has(levelId));
+  if (oldWalls.length) await scene.deleteEmbeddedDocuments("Wall", oldWalls.map(w => w.id));
+  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId));
+
+  // 3. Tochas/braseiros
+  if (oldLights.length) await scene.deleteEmbeddedDocuments("AmbientLight", oldLights.map(l => l.id));
+  const lights = lightDocuments(roomLights, levelId, scene.grid.distance);
+  if (lights.length) await scene.createEmbeddedDocuments("AmbientLight", lights);
+
+  // 4. Guarda a planta editada
+  await scene.update({
+    [`flags.${MODULE_ID}.cells`]: encodeCells(dungeon.cells),
+    [`flags.${MODULE_ID}.rooms`]: dungeon.rooms.map(({ isNew, ...r }) => ({ ...r, center: topo.hexCenter(r.centerCell) })),
+    [`flags.${MODULE_ID}.doors`]: dungeon.doors.map(d => ({ room: d.room, cells: d.edges, secret: !!d.secret, secretRoom: d.secretRoom }))
+  });
+  return { rooms: dungeon.rooms.length, doors: segs.doors.length, lights: lights.length };
 }
 
 /** Uma cena avulsa. */

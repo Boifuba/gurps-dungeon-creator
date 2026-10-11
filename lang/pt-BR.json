@@ -89,6 +89,24 @@
     },
     "Exit": {
       "Name": "Saída → Parte {part}"
+    },
+    "Editor": {
+      "Menu": "Editar planta",
+      "Title": "Editar planta",
+      "Room": "Sala",
+      "Corridor": "Corredor",
+      "AutoDoors": "Porta nas entradas novas",
+      "Hint": "Clique (ou arraste) num hex para pintar · botão direito apaga · Ctrl+Z desfaz",
+      "Door": "Porta",
+      "SecretDoor": "Porta secreta",
+      "Pad": "Teleporte",
+      "Exit": "Saída de cena",
+      "Undo": "Desfazer",
+      "Save": "Salvar e refazer a cena",
+      "Saving": "Refazendo a cena com a planta nova...",
+      "Saved": "Planta aplicada: {rooms} salas, {doors} portas, {lights} luzes.",
+      "NotGenerated": "Esta cena não foi gerada pelo GURPS Dungeon Creator.",
+      "OldVersion": "Esta cena foi gerada por uma versão anterior do módulo e a planta não pôde ser reconstruída. Gere a dungeon de novo para poder editar."
     }
   }
 }
