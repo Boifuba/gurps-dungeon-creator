@@ -17,7 +17,8 @@
       "Size": "Tamanho",
       "Details": "Detalhes",
       "Teleports": "Teleportes",
-      "Secret": "Salas secretas"
+      "Secret": "Salas secretas",
+      "Entrance": "Entrada"
     },
     "Preset": {
       "Small": "Pequena",
@@ -60,7 +61,19 @@
       "SecretRooms": "Quantidade",
       "SecretRoomsHint": "Ligadas por uma passagem estreita que termina numa porta secreta do Foundry. Os jogadores veem parede até o Mestre revelar a porta.",
       "Scenes": "Cenas ligadas",
-      "ScenesHint": "Mais de 1: cria várias cenas numa pasta, lado a lado (4 = 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura."
+      "ScenesHint": "Mais de 1: cria várias cenas numa pasta, lado a lado (4 = 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura.",
+      "Layout": "Tipo de dungeon",
+      "LayoutHint": "Cavernas: grutas naturais ligadas por túneis, sem portas. Ficam mais bonitas com as paredes \"Seguir a grade\".",
+      "LockedChance": "Portas trancadas (%)",
+      "LockedChanceHint": "Porta trancada do Foundry: só abre quando o Mestre destranca. Na imagem, tem faixas de ferro e fechadura.",
+      "Traps": "Armadilhas",
+      "TrapsHint": "Escondidas em corredores (em cavernas, em qualquer chão). Só o Mestre vê. Quem pisa dispara um aviso no chat com os testes do GURPS.",
+      "Entrance": "Marcar a entrada",
+      "EntranceHint": "Escada numa parede da sala 1. A cena abre centralizada nela.",
+      "PlaceParty": "Grupo na entrada",
+      "PlacePartyHint": "Coloca o personagem de cada jogador ao lado da escada.",
+      "Journal": "Criar diário",
+      "JournalHint": "Um diário com uma página por sala e notas numeradas no mapa (só o Mestre vê). Em cenas ligadas, também um mapa geral."
     },
     "Teleport": {
       "Name": "Teleporte: sala {from} → sala {to}"
@@ -107,6 +120,71 @@
       "Saved": "Planta aplicada: {rooms} salas, {doors} portas, {lights} luzes.",
       "NotGenerated": "Esta cena não foi gerada pelo GURPS Dungeon Creator.",
       "OldVersion": "Esta cena foi gerada por uma versão anterior do módulo e a planta não pôde ser reconstruída. Gere a dungeon de novo para poder editar."
+    },
+    "Generating": "Gerando \"{name}\"...",
+    "Created": "\"{name}\" criada: {rooms} salas, {doors} portas, {secret} secretas, {lights} luzes, {traps} armadilhas (seed {seed}).",
+    "Layout": {
+      "Rooms": "Salas e corredores",
+      "Caves": "Cavernas naturais"
+    },
+    "Trap": {
+      "Triggered": "Armadilha: {name}",
+      "pit": {
+        "Name": "Fosso escondido",
+        "Effect": "<p><strong>{token}</strong> pisou num alçapão!</p><p>Teste de [Per-2] para perceber a tempo e recuar.</p><p>Falha: cai 3 jardas e sofre [1d+1 cr]. Um teste de [DX-2] permite se agarrar na borda.</p>"
+      },
+      "darts": {
+        "Name": "Dardos envenenados",
+        "Effect": "<p><strong>{token}</strong> acionou uma placa de pressão!</p><p>Teste de [Per-3] para ouvir o clique a tempo.</p><p>Falha: [Dodge] contra 1d3 dardos de [1d-2 imp]. Quem for atingido faz [HT-2] contra o veneno.</p>"
+      },
+      "blade": {
+        "Name": "Lâmina pendular",
+        "Effect": "<p><strong>{token}</strong> rompeu um fio esticado!</p><p>Teste de [Per-2] para ver o fio antes.</p><p>Falha: uma lâmina desce do teto — [Dodge-1] ou sofre [2d cut].</p>"
+      },
+      "gas": {
+        "Name": "Gás sonífero",
+        "Effect": "<p><strong>{token}</strong> soltou um jato de gás!</p><p>Teste de [Per-4] para sentir o cheiro a tempo.</p><p>Falha: [HT-3] ou adormece por 1d minutos.</p>"
+      },
+      "spikes": {
+        "Name": "Placa de espetos",
+        "Effect": "<p><strong>{token}</strong> pisou numa placa solta!</p><p>Teste de [Per-1] para notar a placa.</p><p>Falha: espetos sobem do chão — [1d+2 imp] no pé; um teste de [DX] reduz o dano à metade.</p>"
+      }
+    },
+    "Journal": {
+      "Name": "{name} — Diário",
+      "OverviewPage": "Visão geral",
+      "RoomName": "Sala {n}",
+      "Size": "Tamanho",
+      "SizeValue": "{w} × {h} hexes ({area} hexes de chão; 1 hex = 1 jarda)",
+      "Cave": "Gruta natural.",
+      "Entrance": "Entrada",
+      "SecretRoom": "Sala secreta: acesso por uma porta secreta na sala {room}.",
+      "TeleportRoom": "Só se chega por teleporte.",
+      "Doors": "Portas",
+      "DoorsCount": "{n} comum(ns)",
+      "LockedCount": "{n} trancada(s)",
+      "SecretDoorsCount": "{n} secreta(s)",
+      "Pads": "{n} círculo(s) de teleporte.",
+      "Light": "Luz",
+      "Torches": "{n} tocha(s) na parede",
+      "Brazier": "braseiro no centro",
+      "Dark": "escura",
+      "GmNotes": "Notas do Mestre",
+      "Seed": "Seed: {seed}",
+      "Summary": "{rooms} salas · {doors} portas ({locked} trancadas) · {secret} secretas",
+      "Traps": "Armadilhas",
+      "TrapsHint": "As armadilhas são regiões que só o Mestre vê. Cada uma dispara uma vez e depois fica desligada (dá para religar na própria região).",
+      "Exits": "Saídas para outras partes",
+      "OverviewName": "{name} — Mapa geral",
+      "OverviewMap": "Mapa",
+      "OverviewParts": "Partes"
+    },
+    "Regen": {
+      "Menu": "Regerar com outra seed",
+      "Title": "Regerar dungeon",
+      "Confirm": "<p>Gerar uma dungeon nova nesta cena, com as mesmas opções e outra seed?</p><p>Planta, imagem, paredes, luzes, armadilhas, teleportes e o diário são refeitos. Tokens e as saídas para outras cenas são mantidos.</p><p><strong>As anotações no diário desta cena serão perdidas.</strong></p>",
+      "Working": "Regerando a dungeon...",
+      "Done": "Dungeon regerada (seed {seed})."
     }
   }
 }

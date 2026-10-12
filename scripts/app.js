@@ -17,7 +17,9 @@ export const DEFAULT_APP_OPTIONS = Object.freeze({
   lightChance: 0.6,
   lightPlacement: "wall", // "wall" = tochas nas paredes; "center" = braseiro no meio da sala
   darkness: 0.8,
-  teleportConfirm: false
+  teleportConfirm: false,
+  placeParty: false,     // coloca os personagens dos jogadores na entrada
+  journal: true          // cria o diário com as salas
 });
 
 /** Presets de tamanho: ajustam o mapa e as salas juntos. */
@@ -85,6 +87,10 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
         wall: "GDC.LightPlacement.Wall",
         center: "GDC.LightPlacement.Center"
       },
+      layouts: {
+        rooms: "GDC.Layout.Rooms",
+        caves: "GDC.Layout.Caves"
+      },
       wallStyles: {
         straight: "GDC.WallStyle.Straight",
         grid: "GDC.WallStyle.Grid"
@@ -92,6 +98,7 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       corridorWidths: Object.fromEntries([1, 2, 3].map(n =>
         [n, game.i18n.format(n === 1 ? "GDC.Field.CorridorWidthOne" : "GDC.Field.CorridorWidthMany", { n })])),
       percent: {
+        lockedChance: Math.round(values.lockedChance * 100),
         extraLoops: Math.round(values.extraLoops * 100),
         doorChance: Math.round(values.doorChance * 100),
         lightChance: Math.round(values.lightChance * 100),
@@ -120,6 +127,7 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       name: data.name,
       seed: data.seed,
       // Mapa
+      layout: data.layout,
       gridType: Number(data.gridType),
       wallStyle: data.wallStyle,
       scenes: Math.clamp(Number(data.scenes), 1, 9),
@@ -131,14 +139,19 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       roomMax: Math.max(Number(data.roomMin), Number(data.roomMax)),
       secretRooms: Math.clamp(Number(data.secretRooms), 0, 20),
       teleportRooms: Math.clamp(Number(data.teleportRooms), 0, 20),
+      entrance: !!data.entrance,
+      placeParty: !!data.placeParty,
       teleportConfirm: !!data.teleportConfirm,
       // Corredores e portas
       corridorWidth: Math.clamp(Number(data.corridorWidth), 1, 3),
+      lockedChance: Number(data.lockedChance) / 100,
+      traps: Math.clamp(Number(data.traps), 0, 30),
       extraLoops: Number(data.extraLoops) / 100,
       doorChance: Number(data.doorChance) / 100,
       // Visual
       lightChance: Number(data.lightChance) / 100,
       lightPlacement: data.lightPlacement,
+      journal: !!data.journal,
       darkness: Number(data.darkness) / 100,
       cellSize: Math.clamp(Number(data.cellSize), 50, 300)
     };

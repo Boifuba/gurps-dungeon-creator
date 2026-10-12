@@ -19,6 +19,7 @@ export function placeLights(d, { lightChance = 0.6, placement = "wall", isLit } 
   const topo = d.topology;
   const rng = new RNG(`${d.seed}:lights`);
   const pads = new Set((d.teleports ?? []).flatMap(t => [t.padA, t.padB]));
+  if (d.entrance) pads.add(d.entrance.cell); // nada de tocha em cima da escada de entrada
   const lights = [];
 
   for (const room of d.rooms) {

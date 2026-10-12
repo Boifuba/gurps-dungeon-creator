@@ -4,7 +4,8 @@
 import { CELL } from "./generator.js";
 
 /**
- * @returns {{walls: number[][], doors: number[][], secretDoors: number[][]}} Segmentos [x1, y1, x2, y2] em pixels.
+ * @returns {{walls: number[][], doors: number[][], lockedDoors: number[][], secretDoors: number[][]}}
+ *   Segmentos [x1, y1, x2, y2] em pixels.
  */
 export function buildWallSegments(d, { openExits = [] } = {}) {
   const topo = d.topology;
@@ -27,9 +28,10 @@ export function buildWallSegments(d, { openExits = [] } = {}) {
     const centers = door.edges.flat().map(id => topo.hexCenter(id));
     return doorSegments(edges, centers, topo.size);
   };
-  const doors = d.doors.filter(door => !door.secret).flatMap(toSegments);
+  const doors = d.doors.filter(door => !door.secret && !door.locked).flatMap(toSegments);
+  const lockedDoors = d.doors.filter(door => !door.secret && door.locked).flatMap(toSegments);
   const secretDoors = d.doors.filter(door => door.secret).flatMap(toSegments);
-  return { walls: mergeCollinear(raw), doors, secretDoors };
+  return { walls: mergeCollinear(raw), doors, lockedDoors, secretDoors };
 }
 
 /**

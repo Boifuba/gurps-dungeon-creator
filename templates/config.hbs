@@ -3,6 +3,13 @@
   {{!-- Mapa: grade, estilo e tamanho --}}
   <section class="tab {{tabs.map.cssClass}}" data-tab="map" data-group="primary">
     <div class="form-group">
+      <label>{{localize "GDC.Field.Layout"}}</label>
+      <select name="layout">
+        {{selectOptions layouts selected=values.layout localize=true}}
+      </select>
+      <p class="hint">{{localize "GDC.Field.LayoutHint"}}</p>
+    </div>
+    <div class="form-group">
       <label>{{localize "GDC.Field.GridType"}}</label>
       <select name="gridType">
         {{selectOptions gridTypes selected=values.gridType localize=true}}
@@ -56,6 +63,19 @@
       <p class="hint">{{localize "GDC.Field.RoomSizeHint"}}</p>
     </div>
     <fieldset>
+      <legend>{{localize "GDC.Section.Entrance"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.Entrance"}}</label>
+        <input type="checkbox" name="entrance" {{checked values.entrance}}>
+        <p class="hint">{{localize "GDC.Field.EntranceHint"}}</p>
+      </div>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.PlaceParty"}}</label>
+        <input type="checkbox" name="placeParty" {{checked values.placeParty}}>
+        <p class="hint">{{localize "GDC.Field.PlacePartyHint"}}</p>
+      </div>
+    </fieldset>
+    <fieldset>
       <legend>{{localize "GDC.Section.Secret"}}</legend>
       <div class="form-group">
         <label>{{localize "GDC.Field.SecretRooms"}}</label>
@@ -95,6 +115,16 @@
       <label>{{localize "GDC.Field.DoorChance"}}</label>
       <range-picker name="doorChance" value="{{percent.doorChance}}" min="0" max="100" step="5"></range-picker>
     </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.LockedChance"}}</label>
+      <range-picker name="lockedChance" value="{{percent.lockedChance}}" min="0" max="100" step="5"></range-picker>
+      <p class="hint">{{localize "GDC.Field.LockedChanceHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Traps"}}</label>
+      <input type="number" name="traps" value="{{values.traps}}" min="0" max="30" step="1">
+      <p class="hint">{{localize "GDC.Field.TrapsHint"}}</p>
+    </div>
   </section>
 
   {{!-- Visual: luz, escuridão, texturas e resolução --}}
@@ -128,6 +158,11 @@
       <label>{{localize "GDC.Field.CellSize"}}</label>
       <input type="number" name="cellSize" value="{{values.cellSize}}" min="50" max="300" step="10">
       <p class="hint">{{localize "GDC.Field.CellSizeHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GDC.Field.Journal"}}</label>
+      <input type="checkbox" name="journal" {{checked values.journal}}>
+      <p class="hint">{{localize "GDC.Field.JournalHint"}}</p>
     </div>
   </section>
 

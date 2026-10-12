@@ -116,7 +116,8 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   ctx.stroke();
 
   // 5. Portas (retângulo de madeira ao longo da aresta) ----------------------
-  for (const [x1, y1, x2, y2] of segs.doors) {
+  const locked = new Set((segs.lockedDoors ?? []).map(s => s.join(",")));
+  for (const [x1, y1, x2, y2] of [...segs.doors, ...(segs.lockedDoors ?? [])]) {
     const len = Math.hypot(x2 - x1, y2 - y1) * 0.9;
     const thick = S * 0.22;
     ctx.save();
@@ -127,6 +128,15 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
     ctx.strokeStyle = COLORS.doorEdge;
     ctx.lineWidth = S * 0.04;
     ctx.strokeRect(-len / 2, -thick / 2, len, thick);
+    if (locked.has([x1, y1, x2, y2].join(","))) {
+      // Porta trancada: duas faixas de ferro e o buraco da fechadura
+      ctx.fillStyle = "#2b2b2e";
+      for (const at of [-0.3, 0.3]) ctx.fillRect(at * len - S * 0.03, -thick / 2, S * 0.06, thick);
+      ctx.fillStyle = "#c9a227";
+      ctx.beginPath();
+      ctx.arc(0, 0, S * 0.045, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -138,6 +148,9 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
     if (light.kind === "torch") drawTorch(ctx, light, S);
     else drawBrazier(ctx, light, S);
   }
+
+  // 6b. Escada de entrada ------------------------------------------------------
+  if (d.entrance) drawStairs(ctx, topo, d.entrance, S);
 
   // 7. Círculos de teleporte ---------------------------------------------------
   for (const t of d.teleports ?? []) {
@@ -178,6 +191,28 @@ function drawExit(ctx, topo, { cell, side }, S) {
     ctx.lineTo((off + 0.06) * S, 0);
     ctx.lineTo((off - 0.08) * S, 0.14 * S);
     ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Escada de entrada: degraus saindo da parede para dentro da sala, cada vez mais claros. */
+function drawStairs(ctx, topo, { cell, edge }, S) {
+  const c = topo.hexCenter(cell);
+  let mx = c.x, my = c.y - S * 0.4;
+  if (edge) { mx = (edge[0] + edge[2]) / 2; my = (edge[1] + edge[3]) / 2; }
+  const len = Math.hypot(c.x - mx, c.y - my) || 1;
+  const nx = (c.x - mx) / len, ny = (c.y - my) / len;
+  ctx.save();
+  ctx.translate(mx, my);
+  ctx.rotate(Math.atan2(ny, nx));
+  const steps = 4, depth = S * 0.16, width = S * 0.75;
+  for (let k = 0; k < steps; k++) {
+    const shade = 70 + k * 30;
+    ctx.fillStyle = `rgb(${shade}, ${shade - 8}, ${shade - 18})`;
+    ctx.fillRect(k * depth, -width / 2, depth, width);
+    ctx.strokeStyle = "rgba(20, 15, 10, 0.8)";
+    ctx.lineWidth = S * 0.025;
+    ctx.strokeRect(k * depth, -width / 2, depth, width);
   }
   ctx.restore();
 }

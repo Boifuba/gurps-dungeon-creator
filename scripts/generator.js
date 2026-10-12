@@ -18,6 +18,10 @@ export const DEFAULT_OPTIONS = Object.freeze({
   secretRooms: 1,     // salas atrás de uma porta secreta (passagem estreita)
   teleportRooms: 1,   // salas sem nenhum acesso a pé, alcançáveis só por teleporte
   exits: [],          // saídas pela borda: [{id, side: "north"|"south"|"east"|"west", pos: 0–1}]
+  layout: "rooms",    // "rooms" = salas e corredores | "caves" = cavernas naturais
+  lockedChance: 0.2,  // chance de cada porta comum começar trancada
+  traps: 2,           // armadilhas escondidas (em corredores; em cavernas, em qualquer chão)
+  entrance: true,     // marca a entrada (escada) na sala 1
   seed: ""
 });
 
@@ -33,9 +37,10 @@ export function generateDungeon(topo, options = {}) {
   const cells = new Uint8Array(topo.count); // tudo WALL
   const isFloor = id => id >= 0 && cells[id] !== CELL.WALL;
 
-  // 1. Salas (retângulos em coordenadas de linha/coluna) --------------------
-  const rooms = [];
-  const maxAttempts = opts.rooms * 40;
+  // 1. Salas (retângulos em coordenadas de linha/coluna) ou cavernas ------------
+  const isCaves = opts.layout === "caves";
+  const rooms = isCaves ? carveCaves(topo, rng, opts) : [];
+  const maxAttempts = isCaves ? 0 : opts.rooms * 40;
   for (let attempt = 0; attempt < maxAttempts && rooms.length < opts.rooms; attempt++) {
     const w = rng.int(opts.roomMin, opts.roomMax);
     const h = rng.int(opts.roomMin, opts.roomMax);
@@ -52,11 +57,9 @@ export function generateDungeon(topo, options = {}) {
   }
   const roomOf = new Int16Array(topo.count); // 0 = nenhuma sala
   for (const r of rooms) {
-    for (let i = r.y; i < r.y + r.h; i++) {
-      for (let j = r.x; j < r.x + r.w; j++) {
-        cells[topo.id(i, j)] = CELL.ROOM;
-        roomOf[topo.id(i, j)] = r.id;
-      }
+    for (const id of roomCells(topo, r)) {
+      cells[id] = CELL.ROOM;
+      roomOf[id] = r.id;
     }
   }
 
@@ -67,6 +70,11 @@ export function generateDungeon(topo, options = {}) {
   const teleportWanted = Math.max(0, Number(opts.teleportRooms) || 0);
   const specialCount = Math.min(secretWanted + teleportWanted, rooms.length - 2);
   const margin = r => {
+    if (r.cells) {
+      const out = new Set(r.cells);
+      for (const c of r.cells) for (const n of topo.neighbors(c)) if (n.id >= 0) out.add(n.id);
+      return [...out];
+    }
     const out = [];
     for (let i = r.y - 1; i <= r.y + r.h; i++) {
       for (let j = r.x - 1; j <= r.x + r.w; j++) if (topo.inBounds(i, j)) out.push(topo.id(i, j));
@@ -77,8 +85,15 @@ export function generateDungeon(topo, options = {}) {
   // (a margem delas empurraria a saída para longe da posição combinada com a cena vizinha)
   const idealExits = new Set((opts.exits ?? [])
     .map(ex => pickEdgeCell(topo, ex.side, ex.pos, new Set(), cells)).filter(c => c !== null));
-  const nearExit = r => margin(r).some(id => idealExits.has(id));
-  rng.shuffle(rooms.slice(1)).filter(r => !nearExit(r)).slice(0, Math.max(0, specialCount)).forEach((r, k) => {
+  // (protege a célula da saída e mais dois anéis de vizinhos, por onde o corredor precisa passar)
+  const exitZone = new Set(idealExits);
+  for (let ring = 0; ring < 2; ring++) {
+    for (const id of [...exitZone]) for (const n of topo.neighbors(id)) if (n.id >= 0) exitZone.add(n.id);
+  }
+  const nearExit = r => margin(r).some(id => exitZone.has(id));
+  // Cavernas: as especiais são as grutas menores (uma gruta enorme isolada bloquearia o mapa)
+  const pool = isCaves ? rooms.slice(1).sort((p, q) => p.cells.length - q.cells.length) : rng.shuffle(rooms.slice(1));
+  pool.filter(r => !nearExit(r)).slice(0, Math.max(0, specialCount)).forEach((r, k) => {
     if (k < secretWanted) r.secret = true;
     else r.isolated = true;
   });
@@ -187,7 +202,7 @@ export function generateDungeon(topo, options = {}) {
       const reaches = roomOf[inside] ? (id => roomOf[id] === room) : (id => id === inside);
       if (!blocksLocally(topo, isFloor, outside, closed, edgeKey, reaches, 6 + corridorWidth * 2)) continue;
       keys.forEach(k => used.add(k));
-      if (rng.chance(opts.doorChance)) doors.push({ edges: doorEdges, room });
+      if (rng.chance(isCaves ? 0 : opts.doorChance)) doors.push({ edges: doorEdges, room });
       break;
     }
   }
@@ -204,9 +219,7 @@ export function generateDungeon(topo, options = {}) {
     if (!passage) {
       // Sem caminho possível: a sala some do mapa
       r.removed = true;
-      for (let i = r.y; i < r.y + r.h; i++) {
-        for (let j = r.x; j < r.x + r.w; j++) { cells[topo.id(i, j)] = CELL.WALL; roomOf[topo.id(i, j)] = 0; }
-      }
+      for (const id of roomCells(topo, r)) { cells[id] = CELL.WALL; roomOf[id] = 0; }
       continue;
     }
     for (const id of passage.path) cells[id] = CELL.CORRIDOR;
@@ -217,6 +230,10 @@ export function generateDungeon(topo, options = {}) {
 
   // 6. Teleportes: cada sala isolada ganha um par de círculos (ida e volta) ---
   const interiorCell = r => {
+    if (r.cells) {
+      const inner = r.cells.filter(c => c !== r.centerCell && topo.neighbors(c).every(n => roomOf[n.id] === r.id));
+      return inner.length ? rng.pick(inner) : r.centerCell;
+    }
     if (r.w < 3 || r.h < 3) return r.centerCell;
     let id;
     do id = topo.id(rng.int(r.y + 1, r.y + r.h - 2), rng.int(r.x + 1, r.x + r.w - 2));
@@ -234,7 +251,137 @@ export function generateDungeon(topo, options = {}) {
     teleports.push({ fromRoom: source.id, toRoom: r.id, padA, padB: r.centerCell });
   }
 
-  return { seed, topology: topo, cells, rooms: rooms.filter(r => !r.removed), doors, teleports, exits, options: opts };
+  // 7. Portas trancadas (sorteio próprio: não muda o resto da dungeon da mesma seed)
+  const lockRng = new RNG(`${seed}:locks`);
+  for (const d of doors) if (!d.secret) d.locked = lockRng.chance(Number(opts.lockedChance) || 0);
+
+  // 8. Entrada: escada encostada numa parede da sala 1 (longe de corredores e teleportes)
+  const pads = new Set(teleports.flatMap(t => [t.padA, t.padB]));
+  let entrance = null;
+  if (opts.entrance && rooms.length) {
+    const entryRng = new RNG(`${seed}:entrance`);
+    const room = rooms[0];
+    const options = [];
+    for (const id of roomCells(topo, room)) {
+      if (pads.has(id)) continue;
+      const ns = topo.neighbors(id);
+      if (ns.some(n => n.id >= 0 && cells[n.id] === CELL.CORRIDOR)) continue;
+      for (const n of ns) if (n.id < 0 || cells[n.id] === CELL.WALL) options.push({ room: room.id, cell: id, edge: n.edge });
+    }
+    entrance = options.length ? entryRng.pick(options) : { room: room.id, cell: room.centerCell, edge: null };
+  }
+
+  // 9. Armadilhas: em corredores (cavernas: em qualquer chão), longe de portas,
+  //    saídas, teleportes, da entrada e umas das outras
+  const trapRng = new RNG(`${seed}:traps`);
+  const traps = [];
+  const wantedTraps = Math.max(0, Number(opts.traps) || 0);
+  if (wantedTraps) {
+    const avoid = new Set([...pads, ...exits.map(ex => ex.cell), ...doors.flatMap(d => d.edges.flat())]);
+    const specialCells = new Set(rooms.filter(r => (r.secret || r.isolated) && !r.removed).flatMap(r => roomCells(topo, r)));
+    const entryCell = entrance?.cell;
+    const candidates = [];
+    for (let id = 0; id < topo.count; id++) {
+      const ok = isCaves ? cells[id] !== CELL.WALL : cells[id] === CELL.CORRIDOR;
+      if (!ok || avoid.has(id) || specialCells.has(id)) continue;
+      if (topo.neighbors(id).some(n => avoid.has(n.id))) continue;
+      if (entryCell !== undefined && topo.distance(id, entryCell) < 4) continue;
+      candidates.push(id);
+    }
+    const types = ["pit", "darts", "blade", "gas", "spikes"];
+    for (const id of trapRng.shuffle(candidates)) {
+      if (traps.length >= wantedTraps) break;
+      if (traps.some(t => topo.distance(t.cell, id) < 5)) continue;
+      traps.push({ cell: id, type: trapRng.pick(types) });
+    }
+  }
+
+  return { seed, topology: topo, cells, rooms: rooms.filter(r => !r.removed), doors, teleports, exits, traps, entrance, options: opts };
+}
+
+/** Células de uma sala: lista livre (cavernas, salas editadas) ou retângulo. */
+export function roomCells(topo, r) {
+  if (r.cells) return r.cells;
+  const out = [];
+  for (let i = r.y; i < r.y + r.h; i++) {
+    for (let j = r.x; j < r.x + r.w; j++) out.push(topo.id(i, j));
+  }
+  return out;
+}
+
+/**
+ * Cavernas naturais por autômato celular: começa com chão aleatório, suaviza algumas vezes
+ * (cada célula vira o que a maioria dos vizinhos é) e guarda as maiores grutas como "salas".
+ * @returns {object[]} salas com .cells (formato livre)
+ */
+function carveCaves(topo, rng, opts) {
+  const n = topo.count;
+  const border = id => {
+    const { i, j } = topo.ij(id);
+    return i === 0 || j === 0 || i === topo.rows - 1 || j === topo.cols - 1;
+  };
+  // Vizinhança "larga": vizinhos e vizinhos dos vizinhos a até 1,6 célula de distância
+  const near = new Array(n);
+  for (let id = 0; id < n; id++) {
+    const set = new Set();
+    for (const a of topo.neighbors(id)) {
+      if (a.id < 0) continue;
+      set.add(a.id);
+      for (const b of topo.neighbors(a.id)) {
+        if (b.id >= 0 && b.id !== id && topo.distance(id, b.id) <= 1.6) set.add(b.id);
+      }
+    }
+    near[id] = [...set];
+  }
+  let floor = new Uint8Array(n);
+  for (let id = 0; id < n; id++) floor[id] = !border(id) && rng.chance(0.48) ? 1 : 0;
+  for (let step = 0; step < 5; step++) {
+    const next = new Uint8Array(n);
+    for (let id = 0; id < n; id++) {
+      if (border(id)) continue;
+      const count = near[id].reduce((sum, k) => sum + floor[k], 0) + floor[id];
+      next[id] = count / (near[id].length + 1) >= 0.5 ? 1 : 0;
+    }
+    floor = next;
+  }
+
+  // Grutas = grupos conectados; as pequenas demais viram rocha
+  const seen = new Uint8Array(n);
+  const groups = [];
+  for (let id = 0; id < n; id++) {
+    if (!floor[id] || seen[id]) continue;
+    const list = [id];
+    seen[id] = 1;
+    for (let k = 0; k < list.length; k++) {
+      for (const nb of topo.neighbors(list[k])) {
+        if (nb.id < 0 || seen[nb.id] || !floor[nb.id]) continue;
+        seen[nb.id] = 1;
+        list.push(nb.id);
+      }
+    }
+    groups.push(list);
+  }
+  const minSize = Math.max(8, Number(opts.roomMin) ** 2 || 8);
+  return groups
+    .filter(g => g.length >= minSize)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, Math.max(2, Number(opts.rooms) || 10))
+    .map((list, k) => {
+      let iMin = Infinity, iMax = -Infinity, jMin = Infinity, jMax = -Infinity, cx = 0, cy = 0;
+      for (const c of list) {
+        const { i, j } = topo.ij(c);
+        iMin = Math.min(iMin, i); iMax = Math.max(iMax, i);
+        jMin = Math.min(jMin, j); jMax = Math.max(jMax, j);
+        const p = topo.center(c);
+        cx += p.x; cy += p.y;
+      }
+      cx /= list.length; cy /= list.length;
+      const centerCell = list.reduce((best, c) => {
+        const p = topo.center(c), q = topo.center(best);
+        return Math.hypot(p.x - cx, p.y - cy) < Math.hypot(q.x - cx, q.y - cy) ? c : best;
+      });
+      return { id: k + 1, x: jMin, y: iMin, w: jMax - jMin + 1, h: iMax - iMin + 1, centerCell, cells: list, cave: true };
+    });
 }
 
 /**
@@ -277,12 +424,9 @@ function secretPassage(topo, cells, roomOf, room, isLinkedRoomCell, forbidden, r
   };
   const parent = new Map();
   let frontier = [];
-  for (let i = room.y; i < room.y + room.h; i++) {
-    for (let j = room.x; j < room.x + room.w; j++) {
-      const id = topo.id(i, j);
-      parent.set(id, -1);
-      frontier.push(id);
-    }
+  for (const id of roomCells(topo, room)) {
+    parent.set(id, -1);
+    frontier.push(id);
   }
   for (let depth = 0; depth < maxLength && frontier.length; depth++) {
     const next = [];
@@ -457,13 +601,14 @@ export function toAscii(d) {
   const topo = d.topology;
   const doorCells = new Set(d.doors.flatMap(o => o.edges.flat()));
   const pads = new Set(d.teleports.flatMap(t => [t.padA, t.padB]));
+  const trapCells = new Set((d.traps ?? []).map(t => t.cell));
   let out = "";
   for (let i = 0; i < topo.rows; i++) {
     let line = "";
     for (let j = 0; j < topo.cols; j++) {
       const id = topo.id(i, j);
       const c = d.cells[id];
-      line += pads.has(id) ? "T" : doorCells.has(id) && c === CELL.CORRIDOR ? "+" : c === CELL.WALL ? "#" : c === CELL.ROOM ? "." : ",";
+      line += d.entrance?.cell === id ? "E" : trapCells.has(id) ? "X" : pads.has(id) ? "T" : doorCells.has(id) && c === CELL.CORRIDOR ? "+" : c === CELL.WALL ? "#" : c === CELL.ROOM ? "." : ",";
     }
     out += line + "\n";
   }
