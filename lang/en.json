@@ -18,7 +18,8 @@
       "Details": "Details",
       "Teleports": "Teleports",
       "Secret": "Secret rooms",
-      "Entrance": "Entrance"
+      "Entrance": "Entrance",
+      "Pillars": "Pillars"
     },
     "Preset": {
       "Small": "Small",
@@ -73,7 +74,10 @@
       "PlaceParty": "Party at the entrance",
       "PlacePartyHint": "Places each player's character next to the stairs.",
       "Journal": "Create journal",
-      "JournalHint": "A journal with one page per room and numbered map notes (GM only). For linked scenes, also an overview map."
+      "JournalHint": "A journal with one page per room and numbered map notes (GM only). For linked scenes, also an overview map.",
+      "Pillars": "Add pillars",
+      "PillarSpan": "Max ceiling span (yards)",
+      "PillarSpanHint": "The ceiling rests on the room's shorter side. If that side exceeds this span, pillars go in a grid: ⌈width ÷ span⌉ − 1 by ⌈length ÷ span⌉ − 1. Reference: timber 4–5, stone slab 3–4, vault 6–8, carved rock 5–6. In caves they become natural columns."
     },
     "Teleport": {
       "Name": "Teleport: room {from} → room {to}"
@@ -177,7 +181,8 @@
       "Exits": "Exits to other parts",
       "OverviewName": "{name} — Overview map",
       "OverviewMap": "Map",
-      "OverviewParts": "Parts"
+      "OverviewParts": "Parts",
+      "Pillars": "{n} pillar(s) holding up the ceiling (block movement and sight; provide cover)."
     },
     "Regen": {
       "Menu": "Regenerate with a new seed",

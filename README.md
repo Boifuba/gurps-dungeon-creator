@@ -13,6 +13,7 @@ One click creates a ready-to-play scene: background image, walls, doors, secret 
 - **Linked scenes.** Generate up to 9 scenes in a folder (for example 2×2). Corridors leave through the scene edge and lead to the neighboring scene at the same height, with a teleport at each end. This keeps each scene light while the dungeon stays huge.
 - **Natural caves.** A second dungeon type: organic caverns linked by tunnels.
 - **Locked doors** (Foundry's locked state, drawn with iron bands and a lock) and **hidden traps**: GM-only regions that post a chat card with clickable GURPS rolls (`[Per-2]`, `[Dodge]`, `[2d cut]`...) when stepped on.
+- **Pillars** where the ceiling span is too wide: the ceiling rests on the room's shorter side, and when that side exceeds the max span (default 6 yards) pillars go in a grid of (⌈width ÷ span⌉ − 1) × (⌈length ÷ span⌉ − 1). In caves they become natural columns.
 - **Entrance** with stairs in room 1; the scene opens centered on it and can place the players' characters there.
 - **Journal**: one page per room (size, doors, light, secrets) with numbered map notes, GM only. Linked sets also get an **overview map** of all parts.
 - **Floor plan editor**: right-click a generated scene → *Edit floor plan*. Paint hexes as room or corridor, right-click to erase, then save to rebuild the scene.

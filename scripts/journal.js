@@ -21,6 +21,7 @@ function roomPage(room, info) {
   if (info.locked) doorBits.push(t("LockedCount", { n: info.locked }));
   if (info.secretDoors) doorBits.push(t("SecretDoorsCount", { n: info.secretDoors }));
   if (doorBits.length) lines.push(`<p><strong>${t("Doors")}:</strong> ${doorBits.join(" · ")}</p>`);
+  if (info.pillars) lines.push(`<p>${t("Pillars", { n: info.pillars })}</p>`);
   if (info.pads) lines.push(`<p>${t("Pads", { n: info.pads })}</p>`);
   lines.push(`<p><strong>${t("Light")}:</strong> ${info.light}</p>`);
   lines.push(`<h3>${t("GmNotes")}</h3><p></p>`);
@@ -34,7 +35,8 @@ function roomInfo(room, dungeon, roomLights) {
   const torches = roomLights.filter(l => l.room === room.id && l.kind === "torch").length;
   const brazier = roomLights.some(l => l.room === room.id && l.kind === "brazier");
   return {
-    area: roomCells(dungeon.topology, room).length,
+    area: roomCells(dungeon.topology, room).filter(c => dungeon.cells[c] !== 0).length,
+    pillars: (dungeon.pillars ?? []).filter(p => p.room === room.id && dungeon.cells[p.cell] === 0).length,
     doors: doorsHere.filter(d => !d.secret && !d.locked).length,
     locked: doorsHere.filter(d => !d.secret && d.locked).length,
     secretDoors: doorsHere.filter(d => d.secret).length,

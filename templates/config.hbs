@@ -63,6 +63,18 @@
       <p class="hint">{{localize "GDC.Field.RoomSizeHint"}}</p>
     </div>
     <fieldset>
+      <legend>{{localize "GDC.Section.Pillars"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.Pillars"}}</label>
+        <input type="checkbox" name="pillars" {{checked values.pillars}}>
+      </div>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.PillarSpan"}}</label>
+        <input type="number" name="pillarSpan" value="{{values.pillarSpan}}" min="3" max="20" step="1">
+        <p class="hint">{{localize "GDC.Field.PillarSpanHint"}}</p>
+      </div>
+    </fieldset>
+    <fieldset>
       <legend>{{localize "GDC.Section.Entrance"}}</legend>
       <div class="form-group">
         <label>{{localize "GDC.Field.Entrance"}}</label>

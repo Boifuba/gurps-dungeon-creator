@@ -18,7 +18,8 @@
       "Details": "Detalhes",
       "Teleports": "Teleportes",
       "Secret": "Salas secretas",
-      "Entrance": "Entrada"
+      "Entrance": "Entrada",
+      "Pillars": "Pilastras"
     },
     "Preset": {
       "Small": "Pequena",
@@ -73,7 +74,10 @@
       "PlaceParty": "Grupo na entrada",
       "PlacePartyHint": "Coloca o personagem de cada jogador ao lado da escada.",
       "Journal": "Criar diário",
-      "JournalHint": "Um diário com uma página por sala e notas numeradas no mapa (só o Mestre vê). Em cenas ligadas, também um mapa geral."
+      "JournalHint": "Um diário com uma página por sala e notas numeradas no mapa (só o Mestre vê). Em cenas ligadas, também um mapa geral.",
+      "Pillars": "Colocar pilastras",
+      "PillarSpan": "Vão máximo do teto (jardas)",
+      "PillarSpanHint": "O teto se apoia no lado menor da sala. Se o lado menor passa desse vão, entram pilastras em grade: ⌈largura ÷ vão⌉ − 1 por ⌈comprimento ÷ vão⌉ − 1. Referência: madeira 4–5, laje de pedra 3–4, abóbada 6–8, rocha escavada 5–6. Em cavernas, viram colunas naturais."
     },
     "Teleport": {
       "Name": "Teleporte: sala {from} → sala {to}"
@@ -177,7 +181,8 @@
       "Exits": "Saídas para outras partes",
       "OverviewName": "{name} — Mapa geral",
       "OverviewMap": "Mapa",
-      "OverviewParts": "Partes"
+      "OverviewParts": "Partes",
+      "Pillars": "{n} pilastra(s) sustentando o teto (bloqueiam passagem e visão; dão cobertura)."
     },
     "Regen": {
       "Menu": "Regerar com outra seed",

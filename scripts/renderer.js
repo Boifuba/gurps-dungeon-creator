@@ -149,6 +149,9 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
     else drawBrazier(ctx, light, S);
   }
 
+  // 6a. Pilastras: coluna de pedra redonda sobre o hex (só se ainda for rocha após edições)
+  for (const p of d.pillars ?? []) if (d.cells[p.cell] === CELL.WALL) drawPillar(ctx, topo.hexCenter(p.cell), S);
+
   // 6b. Escada de entrada ------------------------------------------------------
   if (d.entrance) drawStairs(ctx, topo, d.entrance, S);
 
@@ -192,6 +195,32 @@ function drawExit(ctx, topo, { cell, side }, S) {
     ctx.lineTo((off - 0.08) * S, 0.14 * S);
     ctx.stroke();
   }
+  ctx.restore();
+}
+
+/** Pilastra: coluna de pedra vista de cima, com sombra no chão. */
+function drawPillar(ctx, { x, y }, S) {
+  const r = S * 0.38;
+  ctx.save();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.beginPath();
+  ctx.arc(x + S * 0.06, y + S * 0.08, r * 1.08, 0, Math.PI * 2);
+  ctx.fill();
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+  g.addColorStop(0, "#9a948a");
+  g.addColorStop(1, "#4d4842");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#1e1b18";
+  ctx.lineWidth = S * 0.06;
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(30, 27, 24, 0.5)";
+  ctx.lineWidth = S * 0.025;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.restore();
 }
 

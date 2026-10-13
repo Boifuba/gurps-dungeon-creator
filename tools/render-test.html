@@ -33,7 +33,7 @@
     const [side, pos] = e.split(':');
     return { id: 'x' + k, side, pos: Number(pos) };
   });
-  const d = generateDungeon(topo, { seed, corridorWidth, exits, layout: params.get('layout') || 'rooms', lockedChance: Number(params.get('locked') ?? 0.2), traps: 3 });
+  const d = generateDungeon(topo, { seed, corridorWidth, exits, layout: params.get('layout') || 'rooms', lockedChance: Number(params.get('locked') ?? 0.2), traps: 3, pillars: params.get('pillars') !== '0', pillarSpan: Number(params.get('span') || 6) });
   const segs = buildWallSegments(d, { openExits: d.exits.map(ex => ex.cell) });
   const { placeLights } = await import("../scripts/lights.js");
   const lights = placeLights(d, { lightChance: 0.8, placement: params.get("lights") || "wall" });

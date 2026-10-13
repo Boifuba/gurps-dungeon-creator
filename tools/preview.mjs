@@ -34,6 +34,8 @@ const d = generateDungeon(topo, {
   teleportRooms: Number(process.env.TELE ?? 1),
   layout: process.env.LAYOUT ?? "rooms",
   traps: Number(process.env.TRAPS ?? 2),
+  pillars: !!process.env.PILLARS,
+  pillarSpan: Number(process.env.SPAN ?? 6),
   // EXITS="east:0.5,west:0.3" — saídas pela borda
   exits: (process.env.EXITS ?? "").split(",").filter(Boolean).map((e, k) => {
     const [side, pos] = e.split(":");
@@ -108,9 +110,12 @@ while (stack2.length) {
 const secretRooms = d.rooms.filter(r => r.secret);
 // Armadilhas no chão alcançável; entrada dentro da sala 1
 const trapsBad = d.traps.filter(t => d.cells[t.cell] === CELL.WALL || !seen.has(t.cell)).length;
+// Pilastras: rocha, cercadas só de chão da própria sala, e nenhuma sala ficou inalcançável
+const pillarsBad = (d.pillars ?? []).filter(p => d.cells[p.cell] !== CELL.WALL
+  || topo.neighbors(p.cell).some(n => n.id < 0 || d.cells[n.id] === CELL.WALL)).length;
 const entranceBad = d.entrance && d.entrance.room !== d.rooms[0].id ? 1 : 0;
 const exitsBad = d.exits.filter(x => !seen.has(x.cell)).length;
 const exitsWanted = (process.env.EXITS ?? "").split(",").filter(Boolean).length;
 const secretBad = secretRooms.filter(r => !seen.has(r.centerCell) || seen2.has(r.centerCell)).length;
-console.log(`estilo=${wallStyle} distMin=${minDist.toFixed(2)} grid=${gridType} largura=${corridorWidth} seed=${d.seed} cena=${topo.width}x${topo.height}px salas=${d.rooms.length} portas=${doors.length} paredes=${walls.length} tochas=${torchCount} tochasRuins=${badTorch} inalcançáveis=${unreachable.length} secretas=${secretRooms.length}/${secretDoors.length}p secretasRuins=${secretBad} armadilhas=${d.traps.length} armadilhasRuins=${trapsBad} entradaRuim=${entranceBad} trancadas=${d.doors.filter(o => o.locked).length} saídas=${d.exits.length}/${exitsWanted} saídasRuins=${exitsBad} teleportes=${d.teleports.length} isoladas-com-acesso=${leaking.length}`);
-if (unreachable.length || leaking.length || badTorch || secretBad || trapsBad || entranceBad || exitsBad || d.exits.length < exitsWanted) process.exit(1);
+console.log(`estilo=${wallStyle} distMin=${minDist.toFixed(2)} grid=${gridType} largura=${corridorWidth} seed=${d.seed} cena=${topo.width}x${topo.height}px salas=${d.rooms.length} portas=${doors.length} paredes=${walls.length} tochas=${torchCount} tochasRuins=${badTorch} inalcançáveis=${unreachable.length} secretas=${secretRooms.length}/${secretDoors.length}p secretasRuins=${secretBad} armadilhas=${d.traps.length} armadilhasRuins=${trapsBad} pilastras=${(d.pillars ?? []).length} pilastrasRuins=${pillarsBad} entradaRuim=${entranceBad} trancadas=${d.doors.filter(o => o.locked).length} saídas=${d.exits.length}/${exitsWanted} saídasRuins=${exitsBad} teleportes=${d.teleports.length} isoladas-com-acesso=${leaking.length}`);
+if (unreachable.length || leaking.length || badTorch || secretBad || trapsBad || pillarsBad || entranceBad || exitsBad || d.exits.length < exitsWanted) process.exit(1);

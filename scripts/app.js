@@ -19,6 +19,8 @@ export const DEFAULT_APP_OPTIONS = Object.freeze({
   darkness: 0.8,
   teleportConfirm: false,
   placeParty: false,     // coloca os personagens dos jogadores na entrada
+  pillars: true,         // pilastras onde o vão do teto é grande demais
+  pillarSpan: 6,         // vão máximo do teto, em jardas
   journal: true          // cria o diário com as salas
 });
 
@@ -140,6 +142,8 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       secretRooms: Math.clamp(Number(data.secretRooms), 0, 20),
       teleportRooms: Math.clamp(Number(data.teleportRooms), 0, 20),
       entrance: !!data.entrance,
+      pillars: !!data.pillars,
+      pillarSpan: Math.clamp(Number(data.pillarSpan), 3, 20),
       placeParty: !!data.placeParty,
       teleportConfirm: !!data.teleportConfirm,
       // Corredores e portas

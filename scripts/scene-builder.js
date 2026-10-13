@@ -165,6 +165,7 @@ function dungeonFlags(dungeon, topo) {
     doors: dungeon.doors.map(d => ({ room: d.room, cells: d.edges, secret: !!d.secret, locked: !!d.locked, secretRoom: d.secretRoom })),
     teleports: dungeon.teleports,
     traps: dungeon.traps ?? [],
+    pillars: dungeon.pillars ?? [],
     entrance: dungeon.entrance ?? null
   };
 }
@@ -365,7 +366,7 @@ export async function regenerateScene(scene, options = {}) {
   let plan;
   for (let attempt = 0; attempt < 8; attempt++) {
     plan = planDungeon({
-      ...f.options, seed: randomSeed(), exits: wanted,
+      ...f.options, seed: randomSeed(), exits: wanted, pillars: f.options.pillars ?? false,
       gridType: f.gridType, wallStyle: f.wallStyle ?? "grid", cellSize: f.cellSize
     });
     if (wanted.every(ex => plan.dungeon.exits.some(e => e.id === ex.id))) break;
@@ -399,7 +400,8 @@ export function loadScenePlan(scene) {
   const f = scene.flags?.[MODULE_ID];
   if (!f?.seed || !f.options) throw new Error(game.i18n.localize("GDC.Editor.NotGenerated"));
   const plan = planDungeon({
-    ...f.options, seed: f.seed, gridType: f.gridType, wallStyle: f.wallStyle ?? "grid", cellSize: f.cellSize
+    ...f.options, seed: f.seed, gridType: f.gridType, wallStyle: f.wallStyle ?? "grid", cellSize: f.cellSize,
+    pillars: f.options.pillars ?? false // cenas de antes das pilastras continuam sem elas
   });
   const d = plan.dungeon;
 
@@ -415,6 +417,7 @@ export function loadScenePlan(scene) {
   d.teleports = f.teleports ?? d.teleports;
   d.traps = f.traps ?? d.traps;
   d.entrance = f.entrance ?? d.entrance;
+  d.pillars = f.pillars ?? d.pillars;
   d.exits = (f.exits ?? []).map(({ id, side, cell }) => ({ id, side, cell }));
   return plan;
 }

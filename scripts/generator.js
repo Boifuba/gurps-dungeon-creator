@@ -22,6 +22,8 @@ export const DEFAULT_OPTIONS = Object.freeze({
   lockedChance: 0.2,  // chance de cada porta comum começar trancada
   traps: 2,           // armadilhas escondidas (em corredores; em cavernas, em qualquer chão)
   entrance: true,     // marca a entrada (escada) na sala 1
+  pillars: false,     // pilastras onde o teto não se sustenta sozinho (a janela liga por padrão)
+  pillarSpan: 6,      // vão máximo do teto sem apoio, em células (jardas no GURPS)
   seed: ""
 });
 
@@ -296,7 +298,85 @@ export function generateDungeon(topo, options = {}) {
     }
   }
 
-  return { seed, topology: topo, cells, rooms: rooms.filter(r => !r.removed), doors, teleports, exits, traps, entrance, options: opts };
+  // 10. Pilastras: onde o teto não vence o vão sozinho (ver pillarSpots)
+  const pillars = [];
+  if (opts.pillars) {
+    const span = Math.max(3, Number(opts.pillarSpan) || 6);
+    const avoid = new Set([...pads, ...traps.map(t => t.cell), ...doors.flatMap(d => d.edges.flat())]);
+    if (entrance) {
+      avoid.add(entrance.cell);
+      for (const n of topo.neighbors(entrance.cell)) avoid.add(n.id);
+    }
+    const isPillar = new Set();
+    for (const r of rooms) {
+      if (r.removed) continue;
+      const fits = id => id >= 0 && roomOf[id] === r.id && cells[id] === CELL.ROOM && !avoid.has(id)
+        && topo.neighbors(id).every(n => n.id >= 0 && roomOf[n.id] === r.id && cells[n.id] === CELL.ROOM && !isPillar.has(n.id));
+      for (const want of pillarSpots(topo, cells, r, span)) {
+        const spot = [want, ...topo.neighbors(want).map(n => n.id)].find(fits);
+        if (spot === undefined) continue;
+        cells[spot] = CELL.WALL;
+        isPillar.add(spot);
+        pillars.push({ cell: spot, room: r.id });
+        if (r.centerCell === spot) {
+          // O "centro" da sala (braseiro, notas) passa para o hex livre mais próximo
+          r.centerCell = roomCells(topo, r).filter(c => cells[c] === CELL.ROOM)
+            .reduce((best, c) => (topo.distance(c, spot) < topo.distance(best, spot) ? c : best));
+        }
+      }
+    }
+  }
+
+  return { seed, topology: topo, cells, rooms: rooms.filter(r => !r.removed), doors, teleports, exits, traps, entrance, pillars, options: opts };
+}
+
+/**
+ * Onde a sala precisa de pilastras.
+ *
+ * O teto vence o vão pelo lado MENOR da sala (como uma viga de parede a parede). Se o lado
+ * menor cabe no vão máximo, nada de pilastra, por mais comprida que a sala seja. Se não cabe,
+ * as pilastras formam uma grade com no máximo um vão entre elas e entre elas e a parede:
+ *   pilastras na largura     = ⌈largura ÷ vão⌉ − 1
+ *   pilastras no comprimento = ⌈comprimento ÷ vão⌉ − 1
+ * Cavernas: colunas naturais nos pontos mais longe da rocha, com um vão entre elas.
+ */
+function pillarSpots(topo, cells, r, span) {
+  if (!r.cells) {
+    if (Math.min(r.w, r.h) <= span) return [];
+    const nx = Math.ceil(r.w / span) - 1, ny = Math.ceil(r.h / span) - 1;
+    const spots = [];
+    for (let ky = 1; ky <= ny; ky++) {
+      for (let kx = 1; kx <= nx; kx++) {
+        const i = r.y + Math.round((ky * r.h) / (ny + 1) - 0.5);
+        const j = r.x + Math.round((kx * r.w) / (nx + 1) - 0.5);
+        spots.push(topo.id(i, j));
+      }
+    }
+    return spots;
+  }
+  // Caverna: distância de cada célula até a rocha (busca em largura a partir das bordas)
+  const members = new Set(r.cells);
+  const dist = new Map();
+  let frontier = r.cells.filter(c => topo.neighbors(c).some(n => !members.has(n.id)));
+  frontier.forEach(c => dist.set(c, 1));
+  for (let d = 2; frontier.length; d++) {
+    const next = [];
+    for (const c of frontier) {
+      for (const n of topo.neighbors(c)) {
+        if (!members.has(n.id) || dist.has(n.id)) continue;
+        dist.set(n.id, d);
+        next.push(n.id);
+      }
+    }
+    frontier = next;
+  }
+  const minDist = Math.ceil(span / 2);
+  const spots = [];
+  const candidates = r.cells.filter(c => dist.get(c) > minDist).sort((a, b) => dist.get(b) - dist.get(a));
+  for (const c of candidates) {
+    if (spots.every(s => topo.distance(s, c) >= span)) spots.push(c);
+  }
+  return spots;
 }
 
 /** Células de uma sala: lista livre (cavernas, salas editadas) ou retângulo. */
@@ -602,13 +682,14 @@ export function toAscii(d) {
   const doorCells = new Set(d.doors.flatMap(o => o.edges.flat()));
   const pads = new Set(d.teleports.flatMap(t => [t.padA, t.padB]));
   const trapCells = new Set((d.traps ?? []).map(t => t.cell));
+  const pillarCells = new Set((d.pillars ?? []).map(p => p.cell));
   let out = "";
   for (let i = 0; i < topo.rows; i++) {
     let line = "";
     for (let j = 0; j < topo.cols; j++) {
       const id = topo.id(i, j);
       const c = d.cells[id];
-      line += d.entrance?.cell === id ? "E" : trapCells.has(id) ? "X" : pads.has(id) ? "T" : doorCells.has(id) && c === CELL.CORRIDOR ? "+" : c === CELL.WALL ? "#" : c === CELL.ROOM ? "." : ",";
+      line += pillarCells.has(id) ? "O" : d.entrance?.cell === id ? "E" : trapCells.has(id) ? "X" : pads.has(id) ? "T" : doorCells.has(id) && c === CELL.CORRIDOR ? "+" : c === CELL.WALL ? "#" : c === CELL.ROOM ? "." : ",";
     }
     out += line + "\n";
   }
