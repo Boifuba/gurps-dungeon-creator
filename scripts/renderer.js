@@ -90,8 +90,8 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   const rockPattern = await loadPattern(ctx, rockTexture);
   // Pacote de assets (pasta configurada): 200 px = 5 pés = 5/3 jarda; 1 célula = 1 jarda
   const assetScale = S / 120;
-  const roomFloor = floorPattern ? null : await loadPattern(ctx, assets.floorRoom, assetScale);
-  const corridorFloor = floorPattern ? null : (await loadPattern(ctx, assets.floorCorridor, assetScale)) ?? roomFloor;
+  // Um piso só para salas e corredores, ~30% menor que a escala do asset
+  const assetFloor = floorPattern ? null : await loadPattern(ctx, assets.floor, assetScale * 0.7);
   const doorFrame = await loadBitmap(assets.doorFrame);
   const doorImage = await loadBitmap(assets.door);
   const pillarImage = await loadBitmap(assets.pillar);
@@ -129,14 +129,9 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   if (floorPattern) {
     ctx.fillStyle = floorPattern;
     ctx.fillRect(0, 0, W, H);
-  } else if (roomFloor) {
-    // Piso dos assets: um para as salas, outro para os corredores
-    const roomPath = new Path2D(), corridorPath = new Path2D();
-    for (const id of floorIds) polygon(d.cells[id] === CELL.ROOM || pillarCells.has(id) ? roomPath : corridorPath, topo.vertices(id));
-    ctx.fillStyle = roomFloor;
-    ctx.fill(roomPath);
-    ctx.fillStyle = corridorFloor;
-    ctx.fill(corridorPath);
+  } else if (assetFloor) {
+    ctx.fillStyle = assetFloor;
+    ctx.fillRect(0, 0, W, H);
   } else {
     const seams = new Path2D();
     for (let id = 0; id < topo.count; id++) {

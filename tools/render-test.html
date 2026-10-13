@@ -40,7 +40,7 @@
   // ?assets=1 usa a pasta assets/ do módulo (servir a pasta Data como raiz)
   const A = '/modules/gurps-dungeon-creator/assets/';
   const assets = params.get('assets') ? {
-    floorRoom: A + 'floor-room.jpg', floorCorridor: A + 'floor-corridor.jpg', door: A + 'door.png',
+    floor: A + 'floor.jpg', door: A + 'door.png',
     doorFrame: A + 'door-frame.png', pillar: A + 'pillar.png', entrance: A + 'entrance.png', torch: A + 'torch.png'
   } : {};
   const blob = await renderDungeon(d, segs, { lights, exits: d.exits, assets });

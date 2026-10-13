@@ -2,8 +2,7 @@
  * Pacote de assets: uma pasta (dentro de Data) com imagens nomeadas pelo papel de cada uma.
  * Padrão: a pasta assets/ do próprio módulo (fora do Git: os assets são de terceiros).
  *
- *   floor-room.*      piso das salas (textura que se repete)
- *   floor-corridor.*  piso dos corredores (se faltar, usa o das salas)
+ *   floor.*           piso de salas e corredores (textura que se repete; aceita também floor-room)
  *   door.*            porta (pintada no vão de cada porta, com espessura fixa)
  *   door-frame.*      batentes desenhados nas pontas de cada porta
  *   pillar.*          pilastra
@@ -13,11 +12,11 @@
  * Os assets seguem o padrão comum de 200 px por quadrado de 5 pés (1,67 jarda).
  * Se a pasta escolhida não tiver as imagens, usa a do módulo; se nenhuma tiver, o módulo desenha tudo.
  */
-const ROLES = { "floor-room": "floorRoom", "floor-corridor": "floorCorridor", door: "door", "door-frame": "doorFrame", pillar: "pillar", entrance: "entrance", torch: "torch" };
+const ROLES = { floor: "floor", "floor-room": "floor", door: "door", "door-frame": "doorFrame", pillar: "pillar", entrance: "entrance", torch: "torch" };
 
 export const MODULE_ASSETS = "modules/gurps-dungeon-creator/assets";
 
-/** @returns {Promise<{floorRoom?, floorCorridor?, door?, doorFrame?, pillar?, entrance?, torch?}>} */
+/** @returns {Promise<{floor?, door?, doorFrame?, pillar?, entrance?, torch?}>} */
 export async function findAssetPack(folder) {
   const pack = await browsePack(folder);
   if (Object.keys(pack).length || folder === MODULE_ASSETS) return pack;
