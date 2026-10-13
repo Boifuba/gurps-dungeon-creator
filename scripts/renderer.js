@@ -86,12 +86,13 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   const ctx = canvas.getContext("2d");
   const rng = new RNG(`${d.seed}:render`);
 
-  const floorPattern = await loadPattern(ctx, floorTexture);
+  // As imagens da pasta de assets sempre ganham da "Textura do chão" das configurações
+  const floorPattern = assets.floor ? null : await loadPattern(ctx, floorTexture);
   const rockPattern = await loadPattern(ctx, rockTexture);
   // Pacote de assets (pasta configurada): 200 px = 5 pés = 5/3 jarda; 1 célula = 1 jarda
   const assetScale = S / 120;
   // Um piso só para salas e corredores, ~30% menor que a escala do asset
-  const assetFloor = floorPattern ? null : await loadPattern(ctx, assets.floor, assetScale * 0.7);
+  const assetFloor = await loadPattern(ctx, assets.floor, assetScale * 0.7);
   const doorFrame = await loadBitmap(assets.doorFrame);
   const doorImage = await loadBitmap(assets.door);
   const pillarImage = await loadBitmap(assets.pillar);
