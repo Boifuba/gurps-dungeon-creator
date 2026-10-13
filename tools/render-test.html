@@ -37,11 +37,11 @@
   const segs = buildWallSegments(d, { openExits: d.exits.map(ex => ex.cell) });
   const { placeLights } = await import("../scripts/lights.js");
   const lights = placeLights(d, { lightChance: 0.8, placement: params.get("lights") || "wall" });
-  // ?assets=1 usa a pasta Data/assets/gurps-dungeon-creator (servir a pasta Data como raiz)
-  const A = '/assets/gurps-dungeon-creator/';
+  // ?assets=1 usa a pasta assets/ do módulo (servir a pasta Data como raiz)
+  const A = '/modules/gurps-dungeon-creator/assets/';
   const assets = params.get('assets') ? {
     floorRoom: A + 'floor-room.jpg', floorCorridor: A + 'floor-corridor.jpg', door: A + 'door.png',
-    doorFrame: A + 'door-frame.png', pillar: A + 'pillar.png', entrance: A + 'entrance.png'
+    doorFrame: A + 'door-frame.png', pillar: A + 'pillar.png', entrance: A + 'entrance.png', torch: A + 'torch.png'
   } : {};
   const blob = await renderDungeon(d, segs, { lights, exits: d.exits, assets });
   const finalBlob = blob;

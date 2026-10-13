@@ -17,7 +17,7 @@ Hooks.once("init", () => {
     scope: "world",
     config: false, // editado na aba "Visual" da janela
     type: new foundry.data.fields.StringField({ blank: true }),
-    default: "assets/gurps-dungeon-creator"
+    default: "modules/gurps-dungeon-creator/assets"
   });
 
   game.settings.register(MODULE_ID, "floorTexture", {

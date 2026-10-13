@@ -96,6 +96,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   const doorImage = await loadBitmap(assets.door);
   const pillarImage = await loadBitmap(assets.pillar);
   const entranceImage = await loadBitmap(assets.entrance);
+  const torchImage = await loadBitmap(assets.torch);
 
   // Pilastras: o hex é rocha para o Foundry (paredes em volta), mas na imagem recebe o piso
   // da sala normalmente e a pilastra é desenhada por cima, sem caixa de rocha ao redor.
@@ -228,7 +229,10 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
 
   // 6. Tochas e braseiros ------------------------------------------------------
   for (const light of lights ?? []) {
-    if (light.kind === "torch") drawTorch(ctx, light, S);
+    if (light.kind === "torch") {
+      if (torchImage) drawTorchImage(ctx, torchImage, light, S, assetScale);
+      else drawTorch(ctx, light, S);
+    }
     else drawBrazier(ctx, light, S);
   }
 
@@ -236,7 +240,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   for (const p of d.pillars ?? []) {
     if (d.cells[p.cell] !== CELL.WALL) continue;
     const c = topo.hexCenter(p.cell);
-    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 2.3); // a pedra ocupa ~35% do asset: fica com ~0,8 hex
+    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 1.2); // imagem com 1,2 hex
     else drawPillar(ctx, c, S);
   }
 
@@ -357,6 +361,20 @@ function drawFlame(ctx, x, y, r) {
   ctx.beginPath();
   ctx.arc(x, y, r * 0.5, 0, Math.PI * 2);
   ctx.fill();
+}
+
+/**
+ * Tocha dos assets (1×1): o suporte fica do lado direito da imagem (~84% da largura) e a chama
+ * aponta para a esquerda. O suporte vai na parede e a chama aponta para dentro da sala.
+ */
+function drawTorchImage(ctx, image, { x, y, nx, ny }, S, scale) {
+  const wallX = x - nx * S * 0.2, wallY = y - ny * S * 0.2;
+  ctx.save();
+  ctx.translate(wallX, wallY);
+  ctx.rotate(Math.atan2(-ny, -nx)); // +x da imagem = em direção à parede
+  ctx.scale(scale, scale);
+  ctx.drawImage(image, -image.width * 0.84, -image.height / 2);
+  ctx.restore();
 }
 
 /** Tocha de parede: suporte de ferro saindo da parede + chama. */
