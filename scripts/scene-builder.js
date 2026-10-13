@@ -19,6 +19,11 @@ import { randomSeed } from "./rng.js";
 import { planLinkedSet } from "./set-planner.js";
 import { encodeCells, decodeCells } from "./plan-edit.js";
 import { buildJournal, buildOverview } from "./journal.js";
+import { findAssetPack, imageSize, ASSET_PX_PER_YARD } from "./assets.js";
+import { placeFurniture } from "./furniture.js";
+
+/** Pacote de assets da pasta configurada (vazio se não houver). */
+const assetPack = () => findAssetPack(game.settings.get(MODULE_ID, "assetFolder"));
 
 export const MODULE_ID = "gurps-dungeon-creator";
 
@@ -66,19 +71,21 @@ export function planDungeon(options = {}) {
 /* -------------------------------------------- */
 
 /** Paredes, portas (comuns, trancadas e secretas), marcadas como geradas pelo módulo. */
-function wallDocuments(segs, levelId) {
+function wallDocuments(segs, levelId, assets = {}) {
   const toPx = c => c.map(v => Math.round(v));
   const flags = { [MODULE_ID]: { generated: true } };
+  // Com a imagem de porta dos assets, o Foundry desenha a porta e anima a abertura
+  const animation = assets.door ? { animation: { type: "swing", texture: assets.door } } : {};
   return [
     ...segs.walls.map(c => ({ c: toPx(c), levels: [levelId], flags })),
     ...segs.doors.map(c => ({
-      c: toPx(c), levels: [levelId], flags,
+      c: toPx(c), levels: [levelId], flags, ...animation,
       door: CONST.WALL_DOOR_TYPES.DOOR,
       ds: CONST.WALL_DOOR_STATES.CLOSED
     })),
     // Porta trancada: abre só depois que o Mestre destrancar
     ...(segs.lockedDoors ?? []).map(c => ({
-      c: toPx(c), levels: [levelId], flags,
+      c: toPx(c), levels: [levelId], flags, ...animation,
       door: CONST.WALL_DOOR_TYPES.DOOR,
       ds: CONST.WALL_DOOR_STATES.LOCKED
     })),
@@ -189,19 +196,36 @@ export async function populateScene(scene, plan, options = {}) {
     lightChance: Number(options.lightChance ?? 0.6),
     placement: options.lightPlacement ?? "wall"
   });
+  const assets = await assetPack();
 
   // 1. Imagem
   const blob = await renderDungeon(dungeon, segs, {
     floorTexture: options.floorTexture,
     rockTexture: options.rockTexture,
     lights: roomLights,
-    exits: activeExits
+    exits: activeExits,
+    assets
   });
   const src = await uploadImage(blob, imageName(scene.name, dungeon.seed));
   await scene.updateEmbeddedDocuments("Level", [{ _id: levelId, "background.src": src }]);
 
   // 2. Paredes, portas e luzes
-  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId));
+  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId, assets));
+
+  // 2b. Mesas: Tiles (o Mestre pode mover ou apagar cada uma)
+  if (options.furniture !== false && assets.tables.length) {
+    const tables = [];
+    for (const t of assets.tables) {
+      try { tables.push({ src: t, ...(await imageSize(t)) }); } catch (err) { /* imagem ilegível: ignora */ }
+    }
+    const tiles = placeFurniture(dungeon, tables, { pxPerYard: ASSET_PX_PER_YARD }).map(f => ({
+      texture: { src: f.src },
+      x: f.x, y: f.y, width: f.width, height: f.height, rotation: f.rotation,
+      levels: [levelId],
+      flags: { [MODULE_ID]: { generated: true, furniture: true, room: f.room } }
+    }));
+    if (tiles.length) await scene.createEmbeddedDocuments("Tile", tiles);
+  }
   const distance = scene.grid.distance;
   const lights = lightDocuments(roomLights, levelId, distance);
 
@@ -345,6 +369,8 @@ async function clearGenerated(scene) {
   if (regions.length) await scene.deleteEmbeddedDocuments("Region", regions.map(r => r.id));
   const notes = scene.notes.filter(n => flag(n, "generated"));
   if (notes.length) await scene.deleteEmbeddedDocuments("Note", notes.map(n => n.id));
+  const tiles = scene.tiles.filter(t => flag(t, "furniture"));
+  if (tiles.length) await scene.deleteEmbeddedDocuments("Tile", tiles.map(t => t.id));
   const journal = game.journal.get(f.journalId);
   const journalFolderId = journal?.folder?.id ?? null;
   if (journal) await journal.delete();
@@ -445,11 +471,13 @@ export async function applyEditedPlan(scene, plan, dungeon, options = {}) {
   });
 
   // 1. Imagem nova
+  const assets = await assetPack();
   const blob = await renderDungeon(dungeon, segs, {
     floorTexture: options.floorTexture,
     rockTexture: options.rockTexture,
     lights: roomLights,
-    exits: dungeon.exits
+    exits: dungeon.exits,
+    assets
   });
   const src = await uploadImage(blob, imageName(scene.name, dungeon.seed));
   await scene.updateEmbeddedDocuments("Level", [{ _id: levelId, "background.src": src }]);
@@ -459,7 +487,7 @@ export async function applyEditedPlan(scene, plan, dungeon, options = {}) {
   const oldWalls = generated.length ? generated
     : scene.walls.filter(w => !w.levels.size || w.levels.has(levelId));
   if (oldWalls.length) await scene.deleteEmbeddedDocuments("Wall", oldWalls.map(w => w.id));
-  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId));
+  await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId, assets));
 
   // 3. Tochas/braseiros
   if (oldLights.length) await scene.deleteEmbeddedDocuments("AmbientLight", oldLights.map(l => l.id));

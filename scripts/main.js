@@ -12,6 +12,14 @@ Hooks.once("init", () => {
     default: {}
   });
 
+  // Pasta com assets nomeados pelo papel (floor-room, door, pillar, table-...). Ver scripts/assets.js.
+  game.settings.register(MODULE_ID, "assetFolder", {
+    scope: "world",
+    config: false, // editado na aba "Visual" da janela
+    type: new foundry.data.fields.StringField({ blank: true }),
+    default: "assets/gurps-dungeon-creator"
+  });
+
   game.settings.register(MODULE_ID, "floorTexture", {
     name: "GDC.Setting.FloorTexture",
     hint: "GDC.Setting.FloorTextureHint",

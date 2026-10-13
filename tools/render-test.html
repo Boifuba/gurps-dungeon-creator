@@ -37,8 +37,32 @@
   const segs = buildWallSegments(d, { openExits: d.exits.map(ex => ex.cell) });
   const { placeLights } = await import("../scripts/lights.js");
   const lights = placeLights(d, { lightChance: 0.8, placement: params.get("lights") || "wall" });
-  const blob = await renderDungeon(d, segs, { lights, exits: d.exits });
-  document.getElementById("out").src = URL.createObjectURL(blob);
+  // ?assets=1 usa a pasta Data/assets/gurps-dungeon-creator (servir a pasta Data como raiz)
+  const A = '/assets/gurps-dungeon-creator/';
+  const assets = params.get('assets') ? {
+    floorRoom: A + 'floor-room.jpg', floorCorridor: A + 'floor-corridor.jpg', door: A + 'door.png',
+    doorFrame: A + 'door-frame.png', pillar: A + 'pillar.png', entrance: A + 'entrance.png'
+  } : {};
+  const blob = await renderDungeon(d, segs, { lights, exits: d.exits, assets });
+  // Mesas (no Foundry viram Tiles): desenhadas por cima só para visualizar
+  let finalBlob = blob;
+  if (params.get('assets')) {
+    const { placeFurniture } = await import('../scripts/furniture.js');
+    const load = async src => createImageBitmap(await (await fetch(src)).blob());
+    const tables = [];
+    for (const n of ['table-long.png', 'table-small.png']) { const b = await load(A + n); tables.push({ src: A + n, width: b.width, height: b.height, bitmap: b }); }
+    const placed = placeFurniture(d, tables);
+    const base = await createImageBitmap(blob);
+    const cv = new OffscreenCanvas(base.width, base.height); const cx = cv.getContext('2d');
+    cx.drawImage(base, 0, 0);
+    for (const f of placed) {
+      const t = tables.find(x => x.src === f.src);
+      cx.save(); cx.translate(f.x + f.width / 2, f.y + f.height / 2); cx.rotate(f.rotation * Math.PI / 180);
+      cx.drawImage(t.bitmap, -f.width / 2, -f.height / 2, f.width, f.height); cx.restore();
+    }
+    finalBlob = await cv.convertToBlob({ type: 'image/webp', quality: 0.85 });
+  }
+  document.getElementById("out").src = URL.createObjectURL(finalBlob);
   document.getElementById("info").textContent =
     `grid=${gridType} seed=${seed} · ${d.rooms.length} salas · ${segs.doors.length} portas · ${segs.walls.length} paredes · ${(blob.size / 1024).toFixed(0)} KB`;
 </script>

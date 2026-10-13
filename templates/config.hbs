@@ -156,6 +156,19 @@
       <label>{{localize "GDC.Field.Darkness"}}</label>
       <range-picker name="darkness" value="{{percent.darkness}}" min="0" max="100" step="5"></range-picker>
     </div>
+    <fieldset>
+      <legend>{{localize "GDC.Section.Assets"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.AssetFolder"}}</label>
+        <file-picker name="assetFolder" type="folder" value="{{values.assetFolder}}"></file-picker>
+        <p class="hint">{{localize "GDC.Field.AssetFolderHint"}}</p>
+      </div>
+      <div class="form-group">
+        <label>{{localize "GDC.Field.Furniture"}}</label>
+        <input type="checkbox" name="furniture" {{checked values.furniture}}>
+        <p class="hint">{{localize "GDC.Field.FurnitureHint"}}</p>
+      </div>
+    </fieldset>
     <div class="form-group">
       <label>{{localize "GDC.Setting.FloorTexture"}}</label>
       <file-picker name="floorTexture" type="image" value="{{values.floorTexture}}"></file-picker>

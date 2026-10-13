@@ -19,7 +19,8 @@
       "Teleports": "Teleports",
       "Secret": "Secret rooms",
       "Entrance": "Entrance",
-      "Pillars": "Pillars"
+      "Pillars": "Pillars",
+      "Assets": "Assets"
     },
     "Preset": {
       "Small": "Small",
@@ -77,7 +78,11 @@
       "JournalHint": "A journal with one page per room and numbered map notes (GM only). For linked scenes, also an overview map.",
       "Pillars": "Add pillars",
       "PillarSpan": "Max ceiling span (yards)",
-      "PillarSpanHint": "The ceiling rests on the room's shorter side. If that side exceeds this span, pillars go in a grid: ⌈width ÷ span⌉ − 1 by ⌈length ÷ span⌉ − 1. Reference: timber 4–5, stone slab 3–4, vault 6–8, carved rock 5–6. In caves they become natural columns."
+      "PillarSpanHint": "The ceiling rests on the room's shorter side. If that side exceeds this span, pillars go in a grid: ⌈width ÷ span⌉ − 1 by ⌈length ÷ span⌉ − 1. Reference: timber 4–5, stone slab 3–4, vault 6–8, carved rock 5–6. In caves they become natural columns.",
+      "AssetFolder": "Asset folder",
+      "AssetFolderHint": "Images named: floor-room, floor-corridor, door, door-frame, pillar, entrance and table-anything (standard 200 px per 5-ft square). Anything missing is drawn by the module. Foundry animates the door when it opens.",
+      "Furniture": "Tables",
+      "FurnitureHint": "Up to 2 tables per large room, as Tiles you can move or delete."
     },
     "Teleport": {
       "Name": "Teleport: room {from} → room {to}"

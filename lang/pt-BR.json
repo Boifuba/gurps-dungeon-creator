@@ -19,7 +19,8 @@
       "Teleports": "Teleportes",
       "Secret": "Salas secretas",
       "Entrance": "Entrada",
-      "Pillars": "Pilastras"
+      "Pillars": "Pilastras",
+      "Assets": "Assets"
     },
     "Preset": {
       "Small": "Pequena",
@@ -77,7 +78,11 @@
       "JournalHint": "Um diário com uma página por sala e notas numeradas no mapa (só o Mestre vê). Em cenas ligadas, também um mapa geral.",
       "Pillars": "Colocar pilastras",
       "PillarSpan": "Vão máximo do teto (jardas)",
-      "PillarSpanHint": "O teto se apoia no lado menor da sala. Se o lado menor passa desse vão, entram pilastras em grade: ⌈largura ÷ vão⌉ − 1 por ⌈comprimento ÷ vão⌉ − 1. Referência: madeira 4–5, laje de pedra 3–4, abóbada 6–8, rocha escavada 5–6. Em cavernas, viram colunas naturais."
+      "PillarSpanHint": "O teto se apoia no lado menor da sala. Se o lado menor passa desse vão, entram pilastras em grade: ⌈largura ÷ vão⌉ − 1 por ⌈comprimento ÷ vão⌉ − 1. Referência: madeira 4–5, laje de pedra 3–4, abóbada 6–8, rocha escavada 5–6. Em cavernas, viram colunas naturais.",
+      "AssetFolder": "Pasta de assets",
+      "AssetFolderHint": "Imagens com estes nomes: floor-room, floor-corridor, door, door-frame, pillar, entrance e table-qualquer-coisa (padrão de 200 px por quadrado de 5 pés). O que faltar, o módulo desenha. A porta é animada pelo Foundry ao abrir.",
+      "Furniture": "Mesas",
+      "FurnitureHint": "Até 2 mesas por sala grande, como peças avulsas (Tiles) que você pode mover ou apagar."
     },
     "Teleport": {
       "Name": "Teleporte: sala {from} → sala {to}"

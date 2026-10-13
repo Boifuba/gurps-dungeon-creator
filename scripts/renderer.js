@@ -16,16 +16,33 @@ const COLORS = {
   doorEdge: "#2a1a0c"
 };
 
-async function loadPattern(ctx, src) {
+async function loadBitmap(src) {
   if (!src) return null;
   try {
-    const blob = await (await fetch(src)).blob();
-    const bitmap = await createImageBitmap(blob);
-    return ctx.createPattern(bitmap, "repeat");
+    return await createImageBitmap(await (await fetch(src)).blob());
   } catch (err) {
-    console.warn(`gurps-dungeon-creator | Não consegui carregar a textura ${src}`, err);
+    console.warn(`gurps-dungeon-creator | Não consegui carregar a imagem ${src}`, err);
     return null;
   }
+}
+
+/** Textura que se repete; scale ajusta o tamanho (assets: 200 px por quadrado de 5 pés). */
+async function loadPattern(ctx, src, scale = 1) {
+  const bitmap = await loadBitmap(src);
+  if (!bitmap) return null;
+  const pattern = ctx.createPattern(bitmap, "repeat");
+  if (scale !== 1) pattern.setTransform(new DOMMatrix().scaleSelf(scale, scale));
+  return pattern;
+}
+
+/** Desenha uma imagem centrada em (x, y), girada, com a largura pedida (altura proporcional). */
+function drawCentered(ctx, bitmap, x, y, width, angle = 0) {
+  const height = width * (bitmap.height / bitmap.width);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.drawImage(bitmap, -width / 2, -height / 2, width, height);
+  ctx.restore();
 }
 
 function polygon(path, verts) {
@@ -39,7 +56,7 @@ function polygon(path, verts) {
  * @param {object} segs   Resultado de buildWallSegments (pixels)
  * @returns {Promise<Blob>}
  */
-export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights, exits } = {}) {
+export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights, exits, assets = {} } = {}) {
   const topo = d.topology;
   const S = topo.size;
   const W = topo.width, H = topo.height;
@@ -49,6 +66,13 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
 
   const floorPattern = await loadPattern(ctx, floorTexture);
   const rockPattern = await loadPattern(ctx, rockTexture);
+  // Pacote de assets (pasta configurada): 200 px = 5 pés = 5/3 jarda; 1 célula = 1 jarda
+  const assetScale = S / 120;
+  const roomFloor = floorPattern ? null : await loadPattern(ctx, assets.floorRoom, assetScale);
+  const corridorFloor = floorPattern ? null : (await loadPattern(ctx, assets.floorCorridor, assetScale)) ?? roomFloor;
+  const doorFrame = await loadBitmap(assets.doorFrame);
+  const pillarImage = await loadBitmap(assets.pillar);
+  const entranceImage = await loadBitmap(assets.entrance);
 
   const floorIds = [];
   for (let id = 0; id < topo.count; id++) if (d.cells[id] !== CELL.WALL) floorIds.push(id);
@@ -76,6 +100,14 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   if (floorPattern) {
     ctx.fillStyle = floorPattern;
     ctx.fillRect(0, 0, W, H);
+  } else if (roomFloor) {
+    // Piso dos assets: um para as salas, outro para os corredores
+    const roomPath = new Path2D(), corridorPath = new Path2D();
+    for (const id of floorIds) polygon(d.cells[id] === CELL.ROOM ? roomPath : corridorPath, topo.vertices(id));
+    ctx.fillStyle = roomFloor;
+    ctx.fill(roomPath);
+    ctx.fillStyle = corridorFloor;
+    ctx.fill(corridorPath);
   } else {
     const seams = new Path2D();
     for (let id = 0; id < topo.count; id++) {
@@ -118,6 +150,12 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   // 5. Portas (retângulo de madeira ao longo da aresta) ----------------------
   const locked = new Set((segs.lockedDoors ?? []).map(s => s.join(",")));
   for (const [x1, y1, x2, y2] of [...segs.doors, ...(segs.lockedDoors ?? [])]) {
+    if (doorFrame) {
+      // Batentes nas pontas da porta (no asset, os dois pilares ficam a 19% e 81% da largura)
+      const segLen = Math.hypot(x2 - x1, y2 - y1);
+      drawCentered(ctx, doorFrame, (x1 + x2) / 2, (y1 + y2) / 2, segLen / 0.62, Math.atan2(y2 - y1, x2 - x1));
+    }
+    if (assets.door) continue; // a porta em si é desenhada e animada pelo Foundry
     const len = Math.hypot(x2 - x1, y2 - y1) * 0.9;
     const thick = S * 0.22;
     ctx.save();
@@ -150,10 +188,21 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   }
 
   // 6a. Pilastras: coluna de pedra redonda sobre o hex (só se ainda for rocha após edições)
-  for (const p of d.pillars ?? []) if (d.cells[p.cell] === CELL.WALL) drawPillar(ctx, topo.hexCenter(p.cell), S);
+  for (const p of d.pillars ?? []) {
+    if (d.cells[p.cell] !== CELL.WALL) continue;
+    const c = topo.hexCenter(p.cell);
+    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 1.5); // o pilar ocupa ~60% do asset
+    else drawPillar(ctx, c, S);
+  }
 
   // 6b. Escada de entrada ------------------------------------------------------
-  if (d.entrance) drawStairs(ctx, topo, d.entrance, S);
+  if (d.entrance && entranceImage) {
+    // Alçapão com escada: o lado escuro (degraus descendo) aponta para a parede
+    const c = topo.hexCenter(d.entrance.cell);
+    const e = d.entrance.edge;
+    const angle = e ? Math.atan2((e[1] + e[3]) / 2 - c.y, (e[0] + e[2]) / 2 - c.x) : 0;
+    drawCentered(ctx, entranceImage, c.x, c.y, S * 1.3, angle);
+  } else if (d.entrance) drawStairs(ctx, topo, d.entrance, S);
 
   // 7. Círculos de teleporte ---------------------------------------------------
   for (const t of d.teleports ?? []) {

@@ -21,7 +21,8 @@ export const DEFAULT_APP_OPTIONS = Object.freeze({
   placeParty: false,     // coloca os personagens dos jogadores na entrada
   pillars: true,         // pilastras onde o vão do teto é grande demais
   pillarSpan: 6,         // vão máximo do teto, em jardas
-  journal: true          // cria o diário com as salas
+  journal: true,         // cria o diário com as salas
+  furniture: true        // mesas (se a pasta de assets tiver imagens table-*)
 });
 
 /** Presets de tamanho: ajustam o mapa e as salas juntos. */
@@ -86,7 +87,8 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
     const values = {
       ...DEFAULT_APP_OPTIONS, ...saved, seed: "", name: "",
       floorTexture: game.settings.get(MODULE_ID, "floorTexture") ?? "",
-      rockTexture: game.settings.get(MODULE_ID, "rockTexture") ?? ""
+      rockTexture: game.settings.get(MODULE_ID, "rockTexture") ?? "",
+      assetFolder: game.settings.get(MODULE_ID, "assetFolder") ?? ""
     };
     return Object.assign(context, {
       values,
@@ -173,6 +175,7 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       lightChance: pct(data.lightChance, D().lightChance),
       lightPlacement: data.lightPlacement,
       journal: !!data.journal,
+      furniture: !!data.furniture,
       darkness: pct(data.darkness, D().darkness),
       cellSize: num(data.cellSize, D().cellSize, 50, 300)
     };
@@ -180,6 +183,7 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
     await game.settings.set(MODULE_ID, "lastOptions", toSave);
     await game.settings.set(MODULE_ID, "floorTexture", data.floorTexture || null);
     await game.settings.set(MODULE_ID, "rockTexture", data.rockTexture || null);
+    await game.settings.set(MODULE_ID, "assetFolder", data.assetFolder ?? "");
 
     try {
       await createDungeonSet({
