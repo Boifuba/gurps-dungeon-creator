@@ -156,7 +156,7 @@ function trapRegion(topo, levelId, trap) {
     color: "#d03030",
     shapes: [{ type: "grid", offsets: [{ i, j }] }],
     levels: [levelId],
-    visibility: CONST.REGION_VISIBILITY.GAMEMASTER,
+    visibility: CONST.REGION_VISIBILITY.LAYER, // só aparece com a ferramenta Regions ativa
     flags: { [MODULE_ID]: { trap } },
     behaviors: [{ type: "executeScript", name, system: { events: [CONST.REGION_EVENTS.TOKEN_MOVE_IN], source } }]
   };
