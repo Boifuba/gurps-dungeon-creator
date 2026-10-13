@@ -61,6 +61,12 @@ function drawCentered(ctx, bitmap, x, y, width, angle = 0) {
   ctx.restore();
 }
 
+/** Chave de um segmento, independente do sentido. */
+function edgeKey([x1, y1, x2, y2]) {
+  const a = `${Math.round(x1)},${Math.round(y1)}`, b = `${Math.round(x2)},${Math.round(y2)}`;
+  return a < b ? a + '|' + b : b + '|' + a;
+}
+
 function polygon(path, verts) {
   path.moveTo(verts[0].x, verts[0].y);
   for (let k = 1; k < verts.length; k++) path.lineTo(verts[k].x, verts[k].y);
@@ -91,8 +97,13 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   const pillarImage = await loadBitmap(assets.pillar);
   const entranceImage = await loadBitmap(assets.entrance);
 
+  // Pilastras: o hex é rocha para o Foundry (paredes em volta), mas na imagem recebe o piso
+  // da sala normalmente e a pilastra é desenhada por cima, sem caixa de rocha ao redor.
+  const pillarCells = new Set((d.pillars ?? []).filter(p => d.cells[p.cell] === CELL.WALL).map(p => p.cell));
+  const pillarEdges = new Set();
+  for (const id of pillarCells) for (const n of topo.neighbors(id)) pillarEdges.add(edgeKey(n.edge));
   const floorIds = [];
-  for (let id = 0; id < topo.count; id++) if (d.cells[id] !== CELL.WALL) floorIds.push(id);
+  for (let id = 0; id < topo.count; id++) if (d.cells[id] !== CELL.WALL || pillarCells.has(id)) floorIds.push(id);
 
   // 1. Rocha em toda a imagem ------------------------------------------------
   ctx.fillStyle = rockPattern ?? COLORS.rock;
@@ -120,7 +131,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   } else if (roomFloor) {
     // Piso dos assets: um para as salas, outro para os corredores
     const roomPath = new Path2D(), corridorPath = new Path2D();
-    for (const id of floorIds) polygon(d.cells[id] === CELL.ROOM ? roomPath : corridorPath, topo.vertices(id));
+    for (const id of floorIds) polygon(d.cells[id] === CELL.ROOM || pillarCells.has(id) ? roomPath : corridorPath, topo.vertices(id));
     ctx.fillStyle = roomFloor;
     ctx.fill(roomPath);
     ctx.fillStyle = corridorFloor;
@@ -158,7 +169,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   ctx.lineCap = topo.isStraight ? "square" : "round";
   ctx.beginPath();
   // Portas secretas são desenhadas como parede comum: a imagem não entrega o segredo
-  for (const [x1, y1, x2, y2] of [...segs.walls, ...(segs.secretDoors ?? [])]) {
+  for (const [x1, y1, x2, y2] of [...segs.walls.filter(w => !pillarEdges.has(edgeKey(w))), ...(segs.secretDoors ?? [])]) {
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
   }
@@ -225,7 +236,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   for (const p of d.pillars ?? []) {
     if (d.cells[p.cell] !== CELL.WALL) continue;
     const c = topo.hexCenter(p.cell);
-    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 1.5); // o pilar ocupa ~60% do asset
+    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 2.3); // a pedra ocupa ~35% do asset: fica com ~0,8 hex
     else drawPillar(ctx, c, S);
   }
 

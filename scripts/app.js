@@ -21,8 +21,7 @@ export const DEFAULT_APP_OPTIONS = Object.freeze({
   placeParty: false,     // coloca os personagens dos jogadores na entrada
   pillars: true,         // pilastras onde o vão do teto é grande demais
   pillarSpan: 6,         // vão máximo do teto, em jardas
-  journal: true,         // cria o diário com as salas
-  furniture: true        // mesas (se a pasta de assets tiver imagens table-*)
+  journal: true          // cria o diário com as salas
 });
 
 /** Presets de tamanho: ajustam o mapa e as salas juntos. */
@@ -175,7 +174,6 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       lightChance: pct(data.lightChance, D().lightChance),
       lightPlacement: data.lightPlacement,
       journal: !!data.journal,
-      furniture: !!data.furniture,
       darkness: pct(data.darkness, D().darkness),
       cellSize: num(data.cellSize, D().cellSize, 50, 300)
     };

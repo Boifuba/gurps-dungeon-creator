@@ -19,8 +19,7 @@ import { randomSeed } from "./rng.js";
 import { planLinkedSet } from "./set-planner.js";
 import { encodeCells, decodeCells } from "./plan-edit.js";
 import { buildJournal, buildOverview } from "./journal.js";
-import { findAssetPack, imageSize, ASSET_PX_PER_YARD } from "./assets.js";
-import { placeFurniture } from "./furniture.js";
+import { findAssetPack } from "./assets.js";
 
 /** Pacote de assets da pasta configurada (vazio se não houver). */
 const assetPack = () => findAssetPack(game.settings.get(MODULE_ID, "assetFolder"));
@@ -212,20 +211,6 @@ export async function populateScene(scene, plan, options = {}) {
   // 2. Paredes, portas e luzes
   await scene.createEmbeddedDocuments("Wall", wallDocuments(segs, levelId, assets));
 
-  // 2b. Mesas: Tiles (o Mestre pode mover ou apagar cada uma)
-  if (options.furniture !== false && assets.tables.length) {
-    const tables = [];
-    for (const t of assets.tables) {
-      try { tables.push({ src: t, ...(await imageSize(t)) }); } catch (err) { /* imagem ilegível: ignora */ }
-    }
-    const tiles = placeFurniture(dungeon, tables, { pxPerYard: ASSET_PX_PER_YARD }).map(f => ({
-      texture: { src: f.src },
-      x: f.x, y: f.y, width: f.width, height: f.height, rotation: f.rotation,
-      levels: [levelId],
-      flags: { [MODULE_ID]: { generated: true, furniture: true, room: f.room } }
-    }));
-    if (tiles.length) await scene.createEmbeddedDocuments("Tile", tiles);
-  }
   const distance = scene.grid.distance;
   const lights = lightDocuments(roomLights, levelId, distance);
 
@@ -369,7 +354,7 @@ async function clearGenerated(scene) {
   if (regions.length) await scene.deleteEmbeddedDocuments("Region", regions.map(r => r.id));
   const notes = scene.notes.filter(n => flag(n, "generated"));
   if (notes.length) await scene.deleteEmbeddedDocuments("Note", notes.map(n => n.id));
-  const tiles = scene.tiles.filter(t => flag(t, "furniture"));
+  const tiles = scene.tiles.filter(t => flag(t, "furniture")); // mesas de versões anteriores
   if (tiles.length) await scene.deleteEmbeddedDocuments("Tile", tiles.map(t => t.id));
   const journal = game.journal.get(f.journalId);
   const journalFolderId = journal?.folder?.id ?? null;

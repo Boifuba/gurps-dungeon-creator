@@ -12,7 +12,7 @@ Hooks.once("init", () => {
     default: {}
   });
 
-  // Pasta com assets nomeados pelo papel (floor-room, door, pillar, table-...). Ver scripts/assets.js.
+  // Pasta com assets nomeados pelo papel (floor-room, door, pillar, entrance...). Ver scripts/assets.js.
   game.settings.register(MODULE_ID, "assetFolder", {
     scope: "world",
     config: false, // editado na aba "Visual" da janela

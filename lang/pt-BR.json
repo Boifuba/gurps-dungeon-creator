@@ -80,9 +80,7 @@
       "PillarSpan": "Vão máximo do teto (jardas)",
       "PillarSpanHint": "O teto se apoia no lado menor da sala. Se o lado menor passa desse vão, entram pilastras em grade: ⌈largura ÷ vão⌉ − 1 por ⌈comprimento ÷ vão⌉ − 1. Referência: madeira 4–5, laje de pedra 3–4, abóbada 6–8, rocha escavada 5–6. Em cavernas, viram colunas naturais.",
       "AssetFolder": "Pasta de assets",
-      "AssetFolderHint": "Imagens com estes nomes: floor-room, floor-corridor, door, door-frame, pillar, entrance e table-qualquer-coisa (padrão de 200 px por quadrado de 5 pés). O que faltar, o módulo desenha.",
-      "Furniture": "Mesas",
-      "FurnitureHint": "Até 2 mesas por sala grande, como peças avulsas (Tiles) que você pode mover ou apagar."
+      "AssetFolderHint": "Imagens com estes nomes: floor-room, floor-corridor, door, door-frame, pillar e entrance (padrão de 200 px por quadrado de 5 pés). O que faltar, o módulo desenha."
     },
     "Teleport": {
       "Name": "Teleporte: sala {from} → sala {to}"
