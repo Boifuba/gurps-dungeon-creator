@@ -225,7 +225,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   // 6. Tochas e braseiros ------------------------------------------------------
   for (const light of lights ?? []) {
     if (light.kind === "torch") {
-      if (torchImage) drawTorchImage(ctx, torchImage, light, S, assetScale);
+      if (torchImage) drawTorchImage(ctx, torchImage, light, S, assetScale * 0.75); // tocha com ~0,6 hex
       else drawTorch(ctx, light, S);
     }
     else drawBrazier(ctx, light, S);
@@ -235,7 +235,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   for (const p of d.pillars ?? []) {
     if (d.cells[p.cell] !== CELL.WALL) continue;
     const c = topo.hexCenter(p.cell);
-    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, S * 1.2); // imagem com 1,2 hex
+    if (pillarImage) drawCentered(ctx, pillarImage, c.x, c.y, (S * 1.2) / 0.29); // a pedra (29% da imagem) fica com 1,2 hex
     else drawPillar(ctx, c, S);
   }
 
