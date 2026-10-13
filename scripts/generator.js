@@ -270,7 +270,17 @@ export function generateDungeon(topo, options = {}) {
       if (ns.some(n => n.id >= 0 && cells[n.id] === CELL.CORRIDOR)) continue;
       for (const n of ns) if (n.id < 0 || cells[n.id] === CELL.WALL) options.push({ room: room.id, cell: id, edge: n.edge });
     }
-    entrance = options.length ? entryRng.pick(options) : { room: room.id, cell: room.centerCell, edge: null };
+    // A escada (alçapão quadrado) encosta na parede e cresce para dentro da sala: só vale a
+    // posição em que ela cabe inteira sobre o chão da sala. Tenta 2 hexes, depois 1,5 e 1.
+    const floorCells = roomCells(topo, room).filter(c => cells[c] === CELL.ROOM && !pads.has(c));
+    for (const size of [2, 1.5, 1]) {
+      const fits = options.map(o => ({ ...o, ...stairsFootprint(topo, floorCells, o, size * topo.size) })).filter(o => o.cells);
+      if (fits.length) {
+        entrance = entryRng.pick(fits);
+        break;
+      }
+    }
+    entrance ??= { room: room.id, cell: room.centerCell, edge: null, size: topo.size, cells: [room.centerCell] };
   }
 
   // 9. Armadilhas: em corredores (cavernas: em qualquer chão), longe de portas,
@@ -304,8 +314,10 @@ export function generateDungeon(topo, options = {}) {
     const span = Math.max(3, Number(opts.pillarSpan) || 6);
     const avoid = new Set([...pads, ...traps.map(t => t.cell), ...doors.flatMap(d => d.edges.flat())]);
     if (entrance) {
-      avoid.add(entrance.cell);
-      for (const n of topo.neighbors(entrance.cell)) avoid.add(n.id);
+      for (const c of entrance.cells ?? [entrance.cell]) {
+        avoid.add(c);
+        for (const n of topo.neighbors(c)) avoid.add(n.id);
+      }
     }
     const isPillar = new Set();
     for (const r of rooms) {
@@ -377,6 +389,40 @@ function pillarSpots(topo, cells, r, span) {
     if (spots.every(s => topo.distance(s, c) >= span)) spots.push(c);
   }
   return spots;
+}
+
+/**
+ * Área de uma escada quadrada de lado L encostada na aresta de parede `edge` da célula
+ * `cell`, crescendo para dentro da sala. Confere pontos espalhados pelo quadrado: todos
+ * precisam cair dentro de células de chão da sala.
+ * @returns {{size:number, cells:number[]}|{}}  cells = células que a escada cobre ({} se não cabe)
+ */
+function stairsFootprint(topo, floorCells, { cell, edge }, L) {
+  const [x1, y1, x2, y2] = edge;
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+  const c = topo.center(cell);
+  const len = Math.hypot(c.x - mx, c.y - my) || 1;
+  const nx = (c.x - mx) / len, ny = (c.y - my) / len; // da parede para dentro
+  const tx = -ny, ty = nx;
+  const polys = floorCells.map(id => ({ id, verts: topo.vertices(id) }));
+  const inside = (x, y, verts) => {
+    let hit = false;
+    for (let a = 0, b = verts.length - 1; a < verts.length; b = a++) {
+      const pa = verts[a], pb = verts[b];
+      if ((pa.y > y) !== (pb.y > y) && x < ((pb.x - pa.x) * (y - pa.y)) / (pb.y - pa.y) + pa.x) hit = !hit;
+    }
+    return hit;
+  };
+  const covered = new Set();
+  for (const u of [-0.48, -0.25, 0, 0.25, 0.48]) {
+    for (const v of [0.03, 0.25, 0.5, 0.75, 0.97]) {
+      const px = mx + tx * u * L + nx * v * L, py = my + ty * u * L + ny * v * L;
+      const hit = polys.find(p => inside(px, py, p.verts));
+      if (!hit) return {};
+      covered.add(hit.id);
+    }
+  }
+  return { size: L, cells: [...covered] };
 }
 
 /** Células de uma sala: lista livre (cavernas, salas editadas) ou retângulo. */

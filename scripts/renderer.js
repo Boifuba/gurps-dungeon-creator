@@ -241,11 +241,15 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
 
   // 6b. Escada de entrada ------------------------------------------------------
   if (d.entrance && entranceImage) {
-    // Alçapão com escada: o lado escuro (degraus descendo) aponta para a parede
-    const c = topo.hexCenter(d.entrance.cell);
+    // Alçapão com escada: encostado na parede, todo dentro da sala; os degraus descem para a parede
+    const L = d.entrance.size ?? S;
     const e = d.entrance.edge;
-    const angle = e ? Math.atan2((e[1] + e[3]) / 2 - c.y, (e[0] + e[2]) / 2 - c.x) : 0;
-    drawCentered(ctx, entranceImage, c.x, c.y, S * 1.3, angle);
+    const c = topo.center(d.entrance.cell);
+    let mx = c.x, my = c.y - L / 2;
+    if (e) { mx = (e[0] + e[2]) / 2; my = (e[1] + e[3]) / 2; }
+    const len = Math.hypot(c.x - mx, c.y - my) || 1;
+    const nx = (c.x - mx) / len, ny = (c.y - my) / len;
+    drawCentered(ctx, entranceImage, mx + (nx * L) / 2, my + (ny * L) / 2, L, Math.atan2(-ny, -nx));
   } else if (d.entrance) drawStairs(ctx, topo, d.entrance, S);
 
   // 7. Círculos de teleporte ---------------------------------------------------

@@ -113,9 +113,11 @@ const trapsBad = d.traps.filter(t => d.cells[t.cell] === CELL.WALL || !seen.has(
 // Pilastras: rocha, cercadas só de chão da própria sala, e nenhuma sala ficou inalcançável
 const pillarsBad = (d.pillars ?? []).filter(p => d.cells[p.cell] !== CELL.WALL
   || topo.neighbors(p.cell).some(n => n.id < 0 || d.cells[n.id] === CELL.WALL)).length;
-const entranceBad = d.entrance && d.entrance.room !== d.rooms[0].id ? 1 : 0;
+// Entrada: na sala 1, e a escada inteira sobre chão da sala (nenhuma célula coberta é rocha ou pilastra)
+const entranceBad = d.entrance && (d.entrance.room !== d.rooms[0].id
+  || (d.entrance.cells ?? []).some(c => d.cells[c] !== CELL.ROOM)) ? 1 : 0;
 const exitsBad = d.exits.filter(x => !seen.has(x.cell)).length;
 const exitsWanted = (process.env.EXITS ?? "").split(",").filter(Boolean).length;
 const secretBad = secretRooms.filter(r => !seen.has(r.centerCell) || seen2.has(r.centerCell)).length;
-console.log(`estilo=${wallStyle} distMin=${minDist.toFixed(2)} grid=${gridType} largura=${corridorWidth} seed=${d.seed} cena=${topo.width}x${topo.height}px salas=${d.rooms.length} portas=${doors.length} paredes=${walls.length} tochas=${torchCount} tochasRuins=${badTorch} inalcançáveis=${unreachable.length} secretas=${secretRooms.length}/${secretDoors.length}p secretasRuins=${secretBad} armadilhas=${d.traps.length} armadilhasRuins=${trapsBad} pilastras=${(d.pillars ?? []).length} pilastrasRuins=${pillarsBad} entradaRuim=${entranceBad} trancadas=${d.doors.filter(o => o.locked).length} saídas=${d.exits.length}/${exitsWanted} saídasRuins=${exitsBad} teleportes=${d.teleports.length} isoladas-com-acesso=${leaking.length}`);
+console.log(`estilo=${wallStyle} distMin=${minDist.toFixed(2)} grid=${gridType} largura=${corridorWidth} seed=${d.seed} cena=${topo.width}x${topo.height}px salas=${d.rooms.length} portas=${doors.length} paredes=${walls.length} tochas=${torchCount} tochasRuins=${badTorch} inalcançáveis=${unreachable.length} secretas=${secretRooms.length}/${secretDoors.length}p secretasRuins=${secretBad} armadilhas=${d.traps.length} armadilhasRuins=${trapsBad} pilastras=${(d.pillars ?? []).length} pilastrasRuins=${pillarsBad} entrada=${d.entrance ? (d.entrance.size / topo.size) + "hex" : "-"} entradaRuim=${entranceBad} trancadas=${d.doors.filter(o => o.locked).length} saídas=${d.exits.length}/${exitsWanted} saídasRuins=${exitsBad} teleportes=${d.teleports.length} isoladas-com-acesso=${leaking.length}`);
 if (unreachable.length || leaking.length || badTorch || secretBad || trapsBad || pillarsBad || entranceBad || exitsBad || d.exits.length < exitsWanted) process.exit(1);
