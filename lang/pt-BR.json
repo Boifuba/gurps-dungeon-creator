@@ -62,7 +62,7 @@
       "SecretRooms": "Quantidade",
       "SecretRoomsHint": "Ligadas por uma passagem estreita que termina numa porta secreta do Foundry. Os jogadores veem parede até o Mestre revelar a porta.",
       "Scenes": "Cenas ligadas",
-      "ScenesHint": "Mais de 1: cria várias cenas numa pasta, lado a lado (4 = 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura.",
+      "ScenesHint": "1 = uma cena só. Mais de 1: cria várias cenas numa pasta, lado a lado (4 = 2×2). Corredores saem pela borda e levam à cena vizinha, na mesma altura.",
       "Layout": "Tipo de dungeon",
       "LayoutHint": "Cavernas: grutas naturais ligadas por túneis, sem portas. Ficam mais bonitas com as paredes \"Seguir a grade\".",
       "LockedChance": "Portas trancadas (%)",

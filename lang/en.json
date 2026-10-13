@@ -62,7 +62,7 @@
       "SecretRooms": "Amount",
       "SecretRoomsHint": "Linked by a narrow passage ending in a Foundry secret door. Players see a wall until the GM reveals the door.",
       "Scenes": "Linked scenes",
-      "ScenesHint": "More than 1: creates several scenes in a folder, side by side (4 = 2×2). Corridors leave through the edge into the neighbor scene, at the same height.",
+      "ScenesHint": "1 = a single scene. More than 1: creates several scenes in a folder, side by side (4 = 2×2). Corridors leave through the edge into the neighbor scene, at the same height.",
       "Layout": "Dungeon type",
       "LayoutHint": "Caves: natural caverns linked by tunnels, no doors. They look best with \"Follow the grid\" walls.",
       "LockedChance": "Locked doors (%)",

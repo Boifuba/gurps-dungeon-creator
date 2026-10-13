@@ -33,6 +33,16 @@ const SIZE_PRESETS = {
 
 const TEMPLATES = `modules/${MODULE_ID}/templates`;
 
+/** Número do formulário: vazio ou inválido vira o padrão; fora do limite vira o limite mais próximo. */
+const num = (value, fallback, min, max) => {
+  const n = Number(value);
+  if (value === "" || value === null || value === undefined || !Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(n)));
+};
+/** Porcentagem do formulário (0–100) → fração (0–1). */
+const pct = (value, fallback) => num(value, Math.round(fallback * 100), 0, 100) / 100;
+const D = () => DEFAULT_APP_OPTIONS;
+
 export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "gurps-dungeon-creator",
@@ -110,6 +120,13 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
     });
   }
 
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    // Os campos ficam em abas; um campo "inválido" numa aba fechada não pode receber foco e o
+    // navegador trava o envio sem mostrar nada. Por isso a validação é feita em #onSubmit.
+    this.element.noValidate = true;
+  }
+
   static #onRandomSeed() {
     this.element.querySelector("[name=seed]").value = Math.random().toString(36).slice(2, 8);
   }
@@ -132,32 +149,32 @@ export class DungeonCreatorApp extends HandlebarsApplicationMixin(ApplicationV2)
       layout: data.layout,
       gridType: Number(data.gridType),
       wallStyle: data.wallStyle,
-      scenes: Math.clamp(Number(data.scenes), 1, 9),
-      width: Math.clamp(Number(data.width), 10, 200),
-      height: Math.clamp(Number(data.height), 10, 200),
+      scenes: num(data.scenes, D().scenes, 1, 9),
+      width: num(data.width, D().width, 10, 200),
+      height: num(data.height, D().height, 10, 200),
       // Salas
-      rooms: Math.clamp(Number(data.rooms), 2, 80),
-      roomMin: Math.max(2, Number(data.roomMin)),
-      roomMax: Math.max(Number(data.roomMin), Number(data.roomMax)),
-      secretRooms: Math.clamp(Number(data.secretRooms), 0, 20),
-      teleportRooms: Math.clamp(Number(data.teleportRooms), 0, 20),
+      rooms: num(data.rooms, D().rooms, 2, 80),
+      roomMin: num(data.roomMin, D().roomMin, 2, 30),
+      roomMax: Math.max(num(data.roomMin, D().roomMin, 2, 30), num(data.roomMax, D().roomMax, 2, 30)),
+      secretRooms: num(data.secretRooms, D().secretRooms, 0, 20),
+      teleportRooms: num(data.teleportRooms, D().teleportRooms, 0, 20),
       entrance: !!data.entrance,
       pillars: !!data.pillars,
-      pillarSpan: Math.clamp(Number(data.pillarSpan), 3, 20),
+      pillarSpan: num(data.pillarSpan, D().pillarSpan, 3, 20),
       placeParty: !!data.placeParty,
       teleportConfirm: !!data.teleportConfirm,
       // Corredores e portas
-      corridorWidth: Math.clamp(Number(data.corridorWidth), 1, 3),
-      lockedChance: Number(data.lockedChance) / 100,
-      traps: Math.clamp(Number(data.traps), 0, 30),
-      extraLoops: Number(data.extraLoops) / 100,
-      doorChance: Number(data.doorChance) / 100,
+      corridorWidth: num(data.corridorWidth, D().corridorWidth, 1, 3),
+      lockedChance: pct(data.lockedChance, D().lockedChance),
+      traps: num(data.traps, D().traps, 0, 30),
+      extraLoops: pct(data.extraLoops, D().extraLoops),
+      doorChance: pct(data.doorChance, D().doorChance),
       // Visual
-      lightChance: Number(data.lightChance) / 100,
+      lightChance: pct(data.lightChance, D().lightChance),
       lightPlacement: data.lightPlacement,
       journal: !!data.journal,
-      darkness: Number(data.darkness) / 100,
-      cellSize: Math.clamp(Number(data.cellSize), 50, 300)
+      darkness: pct(data.darkness, D().darkness),
+      cellSize: num(data.cellSize, D().cellSize, 50, 300)
     };
     const { name, seed, ...toSave } = options;
     await game.settings.set(MODULE_ID, "lastOptions", toSave);
