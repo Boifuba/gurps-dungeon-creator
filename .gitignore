@@ -3,6 +3,3 @@ module.zip
 *.log
 .DS_Store
 Thumbs.db
-
-# Assets de terceiros (licença não permite redistribuir): ficam só na sua máquina
-assets/
