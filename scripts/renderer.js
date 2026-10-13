@@ -35,6 +35,22 @@ async function loadPattern(ctx, src, scale = 1) {
   return pattern;
 }
 
+/**
+ * Um batente da moldura dos assets (2×1: um pilar perto de cada ponta, a ~19% e ~81% da largura),
+ * centrado na ponta da porta. Escala fixa: todos os batentes saem do mesmo tamanho.
+ */
+function drawFramePost(ctx, image, x, y, angle, side, scale) {
+  const half = image.width / 2;
+  const sx = side === "left" ? 0 : half;
+  const center = side === "left" ? image.width * 0.19 : image.width * 0.81 - half;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scale, scale);
+  ctx.drawImage(image, sx, 0, half, image.height, -center, -image.height / 2, half, image.height);
+  ctx.restore();
+}
+
 /** Desenha uma imagem centrada em (x, y), girada, com a largura pedida (altura proporcional). */
 function drawCentered(ctx, bitmap, x, y, width, angle = 0) {
   const height = width * (bitmap.height / bitmap.width);
@@ -71,6 +87,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   const roomFloor = floorPattern ? null : await loadPattern(ctx, assets.floorRoom, assetScale);
   const corridorFloor = floorPattern ? null : (await loadPattern(ctx, assets.floorCorridor, assetScale)) ?? roomFloor;
   const doorFrame = await loadBitmap(assets.doorFrame);
+  const doorImage = await loadBitmap(assets.door);
   const pillarImage = await loadBitmap(assets.pillar);
   const entranceImage = await loadBitmap(assets.entrance);
 
@@ -150,12 +167,29 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
   // 5. Portas (retângulo de madeira ao longo da aresta) ----------------------
   const locked = new Set((segs.lockedDoors ?? []).map(s => s.join(",")));
   for (const [x1, y1, x2, y2] of [...segs.doors, ...(segs.lockedDoors ?? [])]) {
-    if (doorFrame) {
-      // Batentes nas pontas da porta (no asset, os dois pilares ficam a 19% e 81% da largura)
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    if (doorImage) {
+      // Porta dos assets: preenche o vão, sempre com a mesma espessura (escala fixa na altura)
       const segLen = Math.hypot(x2 - x1, y2 - y1);
-      drawCentered(ctx, doorFrame, (x1 + x2) / 2, (y1 + y2) / 2, segLen / 0.62, Math.atan2(y2 - y1, x2 - x1));
+      ctx.save();
+      ctx.translate((x1 + x2) / 2, (y1 + y2) / 2);
+      ctx.rotate(angle);
+      const h = doorImage.height * assetScale;
+      ctx.drawImage(doorImage, -segLen / 2, -h / 2, segLen, h);
+      if (locked.has([x1, y1, x2, y2].join(","))) {
+        ctx.fillStyle = "#c9a227";
+        ctx.beginPath();
+        ctx.arc(0, 0, S * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
-    if (assets.door) continue; // a porta em si é desenhada e animada pelo Foundry
+    if (doorFrame) {
+      // Batentes: um pilar em cada ponta, sempre do mesmo tamanho
+      drawFramePost(ctx, doorFrame, x1, y1, angle, "left", assetScale);
+      drawFramePost(ctx, doorFrame, x2, y2, angle, "right", assetScale);
+    }
+    if (doorImage) continue;
     const len = Math.hypot(x2 - x1, y2 - y1) * 0.9;
     const thick = S * 0.22;
     ctx.save();

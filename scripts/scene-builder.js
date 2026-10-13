@@ -74,8 +74,8 @@ export function planDungeon(options = {}) {
 function wallDocuments(segs, levelId, assets = {}) {
   const toPx = c => c.map(v => Math.round(v));
   const flags = { [MODULE_ID]: { generated: true } };
-  // Com a imagem de porta dos assets, o Foundry desenha a porta e anima a abertura
-  const animation = assets.door ? { animation: { type: "swing", texture: assets.door } } : {};
+  // A porta dos assets vai pintada no fundo (sempre visível); abrir/fechar fica no ícone do Foundry
+  const animation = {};
   return [
     ...segs.walls.map(c => ({ c: toPx(c), levels: [levelId], flags })),
     ...segs.doors.map(c => ({
