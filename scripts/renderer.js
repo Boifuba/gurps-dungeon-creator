@@ -182,7 +182,7 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
       ctx.save();
       ctx.translate((x1 + x2) / 2, (y1 + y2) / 2);
       ctx.rotate(angle);
-      const h = doorImage.height * assetScale;
+      const h = doorImage.height * assetScale * 0.6; // porta mais fina
       ctx.drawImage(doorImage, -segLen / 2, -h / 2, segLen, h);
       if (locked.has([x1, y1, x2, y2].join(","))) {
         ctx.fillStyle = "#c9a227";
@@ -194,8 +194,8 @@ export async function renderDungeon(d, segs, { floorTexture, rockTexture, lights
     }
     if (doorFrame) {
       // Batentes: um pilar em cada ponta, sempre do mesmo tamanho
-      drawFramePost(ctx, doorFrame, x1, y1, angle, "left", assetScale);
-      drawFramePost(ctx, doorFrame, x2, y2, angle, "right", assetScale);
+      drawFramePost(ctx, doorFrame, x1, y1, angle, "left", assetScale * 0.6);
+      drawFramePost(ctx, doorFrame, x2, y2, angle, "right", assetScale * 0.6);
     }
     if (doorImage) continue;
     const len = Math.hypot(x2 - x1, y2 - y1) * 0.9;

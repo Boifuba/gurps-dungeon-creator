@@ -2,11 +2,11 @@
   "id": "gurps-dungeon-creator",
   "title": "GURPS Dungeon Creator",
   "description": "Gera dungeons em hexágono para GURPS: salas ou cavernas, portas trancadas e secretas, armadilhas, tochas, teleportes, diário e cenas ligadas.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "authors": [{ "name": "Boifubá", "url": "https://github.com/Boifuba" }],
   "url": "https://github.com/Boifuba/gurps-dungeon-creator",
   "manifest": "https://github.com/Boifuba/gurps-dungeon-creator/releases/latest/download/module.json",
-  "download": "https://github.com/Boifuba/gurps-dungeon-creator/releases/download/v0.3.0/module.zip",
+  "download": "https://github.com/Boifuba/gurps-dungeon-creator/releases/download/v0.4.0/module.zip",
   "bugs": "https://github.com/Boifuba/gurps-dungeon-creator/issues",
   "readme": "https://github.com/Boifuba/gurps-dungeon-creator#readme",
   "compatibility": {
